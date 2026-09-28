@@ -1,0 +1,22 @@
+# Secrets — never commit
+.env
+.env.local
+*.env
+!.env.example
+notifier/.env
+
+# Dependencies
+node_modules/
+
+# Extension local config (contains the deployment's Supabase URL/anon key)
+extension/src/core/env.local.js
+dashboard/assets/env.local.js
+
+# Build/OS artifacts
+dist/
+*.zip
+.DS_Store
+Thumbs.db
+
+# notifier background log
+notifier/logs/

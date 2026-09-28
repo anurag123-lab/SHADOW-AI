@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offline preview — sample data</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/favicon.svg" alt="" width="24" height="24" />
+      <div><strong>Acme Corp</strong><div class="topbar-meta">Last 30 days</div></div>
+    </div>
+    <div class="topbar-right">
+      <div class="joincode"><span>Join code</span><b>A1B2C3D4</b></div>
+      <button class="btn btn-secondary">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="alert" style="background:rgba(250,178,25,.16);color:#8a5a00;border-color:rgba(250,178,25,.35)">
+      <b>Offline preview.</b> Every number on this page is invented sample data, shown without a backend connection.
+      The live dashboard is <code>admin.html</code>.
+    </div>
+    <div class="card digest">
+      <h3>This week, in plain language</h3>
+      <p class="digest-text">In the last 7 days, <b>47</b> events were flagged. <b>Finance</b> accounted for the most (14). <b>18</b> required mandatory redaction, and <b>9</b> were sent anyway after a warning. <b>2</b> honeytoken matches were recorded — those are confirmed leaks, not guesses. <b>6</b> distinct AI tools were seen in use.</p>
+    </div>
+
+    <div class="section-head"><h2>Overview</h2><p>124 events · 14 anonymous IDs</p></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="section-head"><h2>Activity</h2></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Flagged events over time</h3>
+        <p class="card-sub">Typed messages and file uploads, by day.</p>
+        <div class="chart-box"><canvas id="timeChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Where it's happening</h3>
+        <p class="card-sub">Flagged events by department (Feature 17).</p>
+        <div class="chart-box"><canvas id="deptChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:14px">
+      <div class="card">
+        <h3>What's being caught</h3>
+        <p class="card-sub">The detection categories firing most often.</p>
+        <div class="chart-box tall"><canvas id="patternChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Risk level</h3>
+        <p class="card-sub">Severity distribution across all flagged events.</p>
+        <div class="chart-box"><canvas id="riskChart"></canvas></div>
+        <div class="legend" id="riskLegend"></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Compliance &amp; shadow tools</h2></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Compliance framework exposure</h3>
+        <p class="card-sub">Which regulation each detection maps to. A triage signal, not a legal determination.</p>
+        <div class="chart-box"><canvas id="complianceChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>AI tools discovered</h3>
+        <p class="card-sub">Tools people are actually opening.</p>
+        <table>
+          <thead><tr><th>Tool</th><th class="num">People</th><th class="num">Visits</th></tr></thead>
+          <tbody id="toolsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Tuning &amp; escalation</h2></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Repeated overrides</h3>
+        <p class="card-sub">Anonymous IDs that chose "send anyway" on High-risk matches.</p>
+        <table>
+          <thead><tr><th>Anonymous ID</th><th>Department</th><th class="num">Overrides</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">emp_4f2a9c1e88b30d77</td><td>Engineering</td><td class="num"><span class="pill" data-tone="critical">⚠ 6</span></td></tr>
+            <tr><td class="mono">emp_bb71e0a4c5d92f13</td><td>Sales</td><td class="num"><span class="pill" data-tone="critical">⚠ 4</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Policy engine</h3>
+        <p class="card-sub">Enforcement tier by detection type.</p>
+        <table>
+          <thead><tr><th>Detection type</th><th>Group</th><th>Enforcement</th></tr></thead>
+          <tbody>
+            <tr><td>Payment card number</td><td>Regulated data</td><td><select class="tier-select"><option>Mandatory redaction</option></select></td></tr>
+            <tr><td>Email address</td><td>Personal data</td><td><select class="tier-select"><option>Warn — employee decides</option></select></td></tr>
+            <tr><td>Honeytoken match</td><td>Confirmed leak</td><td><span class="pill" data-tone="critical">Always mandatory</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="privacy-banner">
+      <strong>What this dashboard can and cannot show you.</strong>
+      Every number here is built from event metadata. There is no view, query, or export
+      that reveals what an employee wrote or which file they attached.
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="assets/charts.js"></script>
+  <script>
+    var tiles = [
+      { label: "Flagged events", value: 124, note: "27 from file uploads" },
+      { label: "Redacted before sending", value: 68, note: "55% of all events", tone: "good" },
+      { label: "Mandatory redactions", value: 41, note: "no override was offered" },
+      { label: "Sent anyway", value: 19, note: "15% override rate" },
+      { label: "Confirmed leaks", value: 5, note: "honeytoken matches", tone: "critical" },
+      { label: "False positives", value: 13, note: "10% of all events" },
+    ];
+    var wrap = document.getElementById("tiles");
+    tiles.forEach(function (t) {
+      var c = document.createElement("div"); c.className = "tile";
+      c.innerHTML = '<div class="tile-label"></div><div class="tile-value"></div><div class="tile-note"></div>';
+      c.children[0].textContent = t.label;
+      c.children[1].textContent = t.value;
+      c.children[2].textContent = t.note;
+      if (t.tone) c.children[2].setAttribute("data-tone", t.tone);
+      wrap.appendChild(c);
+    });
+
+    var tools = [["perplexity.ai",9,42],["chat.deepseek.com",6,19],["poe.com",5,16],["grok.com",4,12],["you.com",3,9],["huggingface.co",2,6]];
+    var tb = document.getElementById("toolsBody"); var maxv = 42;
+    tools.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td><div class="bar-cell"><span></span><div class="bar-track"><div class="bar-fill"></div></div></div></td><td class="num"></td><td class="num"></td>';
+      tr.querySelector("span").textContent = r[0];
+      tr.querySelector(".bar-fill").style.width = Math.round(r[2]/maxv*100) + "%";
+      tr.children[1].textContent = r[1]; tr.children[2].textContent = r[2];
+      tb.appendChild(tr);
+    });
+
+    var labels = [], text = [], files = [];
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(Date.now() - i * 86400000);
+      labels.push(d.toLocaleDateString(undefined, { month: "short", day: "numeric" }));
+      text.push(Math.round(2 + Math.random() * 6 + (29 - i) * 0.12));
+      files.push(Math.round(Math.random() * 3));
+    }
+    SAGCharts.lines("timeChart", labels, [
+      { label: "Typed messages", values: text },
+      { label: "File uploads", values: files },
+    ]);
+
+    SAGCharts.bars("deptChart", ["Engineering","Sales","Finance","Marketing","HR","Legal","Support"], [34,26,19,15,13,9,8]);
+
+    SAGCharts.barsHorizontal("patternChart",
+      ["Email address","API key / token","Phone number","Payment card number","HR / personnel","Legal / contract language","Corporate strategy","Internal IP address"],
+      [41,28,24,19,16,13,9,7]);
+
+    SAGCharts.ordinalBars("riskChart", ["Low","Medium","High"], [38,52,34]);
+    var p = SAGCharts.palette();
+    var legend = document.getElementById("riskLegend");
+    [["Low", p.riskLow], ["Medium", p.riskMed], ["High", p.riskHigh]].forEach(function (pair) {
+      var item = document.createElement("span"); item.className = "legend-item";
+      var sw = document.createElement("span"); sw.className = "legend-swatch"; sw.style.background = pair[1];
+      item.appendChild(sw);
+      var t = document.createElement("span"); t.textContent = pair[0] + " risk"; item.appendChild(t);
+      legend.appendChild(item);
+    });
+
+    SAGCharts.barsHorizontal("complianceChart",
+      ["GDPR","Internal Security Policy","Internal Policy","PCI DSS","India DPDP Act","HIPAA"],
+      [58,44,31,22,15,6]);
+  </script>
+</body>
+</html>

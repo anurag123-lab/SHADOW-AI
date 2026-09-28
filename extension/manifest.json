@@ -1,0 +1,102 @@
+{
+  "manifest_version": 3,
+  "name": "Shadow AI Guard",
+  "version": "1.0.0",
+  "description": "Catches sensitive company data before it reaches an AI tool. Detection runs entirely in your browser — your messages are never transmitted.",
+
+  "permissions": ["storage", "identity", "alarms", "clipboardWrite"],
+
+  "host_permissions": [
+    "https://*.supabase.co/*",
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://copilot.microsoft.com/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+
+  "action": {
+    "default_popup": "src/ui/popup.html",
+    "default_title": "Shadow AI Guard",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "options_page": "src/options/options.html",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*"
+      ],
+      "js": [
+        "src/core/patterns.js",
+        "src/core/detector.js",
+        "vendor/mammoth.browser.min.js",
+        "src/content/interstitial.js",
+        "src/content/file-extractor.js",
+        "src/content/file-scanner.js",
+        "src/content/content-script.js"
+      ],
+      "css": ["src/content/interstitial.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://poe.com/*",
+        "https://huggingface.co/chat/*",
+        "https://character.ai/*",
+        "https://you.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://chat.mistral.ai/*",
+        "https://pi.ai/*",
+        "https://www.meta.ai/*",
+        "https://www.phind.com/*"
+      ],
+      "js": ["src/content/discovery-script.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "vendor/pdf.min.mjs",
+        "vendor/pdf.worker.min.mjs",
+        "vendor/mammoth.browser.min.js",
+        "src/content/interstitial.css"
+      ],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*"
+      ]
+    }
+  ],
+
+  "minimum_chrome_version": "116"
+}

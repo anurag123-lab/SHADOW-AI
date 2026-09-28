@@ -1,0 +1,12 @@
+service: billing-api
+environment: production
+hosts:
+  primary: 10.20.1.15
+  replica: 192.168.40.7
+database:
+  user: billing_svc
+  password: 7Kx9mPq2LvR4nT8wZ3bY6cF1jH5gD0sA
+tls_key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIEpAIBAAKCAQEAu1SU1LfVLPHCozMxH2Mo4lgOEePzNm0tRgeLezV6ffAt0gun
+  -----END RSA PRIVATE KEY-----

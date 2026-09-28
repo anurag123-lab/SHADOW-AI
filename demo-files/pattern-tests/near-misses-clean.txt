@@ -1,0 +1,6 @@
+Add the release to the agenda for Monday's sync.
+Invoice reference 1234567890123456 was raised yesterday.
+Order number 100200300 shipped on the 3rd.
+Version 2.10.4 is live on staging; the build took 1234 seconds.
+Our public DNS resolver is 8.8.8.8.
+Write to the team at the usual channel, not by email.

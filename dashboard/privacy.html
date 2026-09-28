@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Privacy Policy — Shadow AI</title>
+  <meta name="description" content="What Shadow AI collects, what it never collects, and how the data is protected." />
+  <link rel="icon" href="assets/favicon.svg" />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/landing.css" />
+</head>
+<body class="landing legal-page">
+  <div id="bg" aria-hidden="true"><div class="blob blob-1"></div><div class="blob blob-3"></div></div>
+
+  <header class="nav">
+    <a class="nav-brand" href="index.html"><img src="assets/favicon.svg" alt="" width="26" height="26" /><span>SHADOW AI</span></a>
+    <nav class="legal-links" aria-label="Legal">
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="cookies.html">Cookies</a>
+    </nav>
+    <a href="index.html#signin" class="pill-btn pill-btn-light">Sign in</a>
+  </header>
+
+  <main class="legal">
+    <a class="legal-back" href="index.html">← Back to home</a>
+    <p class="eyebrow">Legal</p>
+    <h1>Privacy Policy</h1>
+    <p class="legal-meta">Last updated: <time datetime="2026-09-27">27 September 2026</time> · Applies to the Shadow AI browser extension, dashboard and email alerts.</p>
+
+    <div class="legal-summary glass">
+      <h2>In short</h2>
+      <ul>
+        <li><b>We never collect what anyone types or uploads.</b> Detection runs inside the employee's browser; only a short description of <em>what kind</em> of data was caught leaves the device.</li>
+        <li><b>IT sees categories, not people.</b> Events are tied to an anonymous ID. The table linking people to IDs is closed to admins by database rules.</li>
+        <li><b>No advertising, no tracking cookies, no sale of data.</b></li>
+      </ul>
+    </div>
+
+    <h2>1. Who we are and our role</h2>
+    <p>Shadow AI (“we”, “us”) is operated by <span class="placeholder">[Company legal name, registered address]</span>. Contact: <span class="placeholder">[privacy@your-domain]</span>.</p>
+    <p>An organisation (“the Customer”) creates a workspace and invites its employees. For data about those employees, <b>the Customer is the data controller</b> (or “data fiduciary” under India’s DPDP Act) and <b>we process it on the Customer’s behalf</b>. For the Customer’s own admin accounts, we are the controller.</p>
+
+    <h2>2. What we collect</h2>
+    <h3>Workspace admins (IT)</h3>
+    <ul>
+      <li>Email address and a password (stored only as a secure hash by our authentication provider), or your Google account email if you choose Google sign-in.</li>
+      <li>Company name, the email address for alerts, and your weekly-digest preference.</li>
+      <li>Sign-in timestamps, used for security.</li>
+    </ul>
+    <h3>Employees using the extension</h3>
+    <ul>
+      <li><b>Account:</b> email address and sign-in details, and the department you choose.</li>
+      <li><b>Team roster:</b> your email and the date you joined, visible to your workspace admins. The roster deliberately contains no anonymous ID and no department, so it cannot be used to identify who triggered an event.</li>
+      <li><b>Event metadata</b>, only when something sensitive is detected: the <em>type</em> of data (e.g. “payment card number”), the AI website’s hostname (e.g. chatgpt.com), whether it was typed text or a file upload, the file type and a shortened file name, the related regulation tags, the risk level, what you chose to do (e.g. redacted, sent anyway), an optional false-positive reason, the time, and your department and anonymous ID.</li>
+      <li><b>AI site visits:</b> the hostname of AI tools you open (e.g. perplexity.ai), at most once per tool per day, so IT can see which tools are in use. No page content is read.</li>
+    </ul>
+    <h3>What we never collect</h3>
+    <ul>
+      <li>The text you type, the files you upload, or the sensitive values that were found.</li>
+      <li>Your browsing history beyond the AI-tool hostnames above, keystrokes, or screenshots.</li>
+    </ul>
+    <p>This is enforced technically, not just by policy: the event database has no column capable of holding a message, every text field is length-limited or restricted to a fixed list, and the extension builds events from an explicit allow-list of fields.</p>
+
+    <h2>3. How the data is used</h2>
+    <ul>
+      <li>To show the Customer’s IT team aggregated activity, charts and event metadata in the dashboard.</li>
+      <li>To send alert emails and an optional weekly summary to the Customer’s admins.</li>
+      <li>To sync the Customer’s detection settings (policies, keywords, honeytokens, approved AI tool) to employees’ browsers.</li>
+      <li>To secure, operate and debug the service.</li>
+    </ul>
+    <p>We do not use the data for advertising, profiling, or training AI models, and we do not sell or rent it. The Customer’s legal basis for processing its employees’ data (for example, legitimate interest in preventing data leaks) is the Customer’s responsibility, including informing its employees.</p>
+
+    <h2>4. Service providers</h2>
+    <table class="legal-table">
+      <thead><tr><th>Provider</th><th>Purpose</th><th>Data involved</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase</td><td>Database, authentication and live updates</td><td>All account and event data described above</td></tr>
+        <tr><td>Google (Gmail SMTP)</td><td>Sending alert and digest emails</td><td>Admin email address and event metadata in the email</td></tr>
+        <tr><td>Google (Sign-in)</td><td>Optional “Continue with Google”</td><td>Your Google account email</td></tr>
+        <tr><td>Google Fonts, Fontshare, jsDelivr, cdnjs</td><td>Loading fonts and open-source code for the web pages</td><td>Your IP address and browser details, as with any web request</td></tr>
+      </tbody>
+    </table>
+
+    <h2>5. Storage in your browser</h2>
+    <p>The dashboard keeps your sign-in session in your browser’s local storage; the extension keeps its session, your workspace settings and any not-yet-sent event metadata in the browser’s extension storage. See the <a href="cookies.html">Cookie Policy</a>.</p>
+
+    <h2>6. Retention and deletion</h2>
+    <ul>
+      <li>Event metadata is kept while the workspace exists, so the Customer can review trends. <span class="placeholder">[Set a fixed retention period before launch, e.g. 12 months.]</span></li>
+      <li>Deleting a workspace deletes its events, settings, roster and admin profiles. Deleting a user account removes their account, profile and roster entry.</li>
+      <li>Employees should contact their organisation’s IT team first; you can also contact us at the address above.</li>
+    </ul>
+
+    <h2>7. Security</h2>
+    <p>Data is encrypted in transit (HTTPS/TLS). Access is enforced by row-level security in the database: employees can only add their own events and cannot read any; admins can only read their own workspace; nobody in the Customer’s organisation can link an anonymous ID to a person. Secret server keys are never shipped to browsers.</p>
+
+    <h2>8. Your rights</h2>
+    <p>Depending on where you live (for example under the GDPR or India’s DPDP Act 2023), you may have the right to access, correct, delete or port your personal data, to object to or restrict processing, and to complain to a data-protection authority. Because the Customer controls employee data, requests about it are handled with the Customer. Contact <span class="placeholder">[privacy@your-domain]</span>.</p>
+
+    <h2>9. International transfers</h2>
+    <p>Our providers may process data outside your country. <span class="placeholder">[State your Supabase project region and the transfer safeguards you rely on, e.g. Standard Contractual Clauses.]</span></p>
+
+    <h2>10. Children</h2>
+    <p>Shadow AI is a workplace tool for organisations. It is not directed at children, and we do not knowingly collect data from anyone under 18.</p>
+
+    <h2>11. Chrome Web Store — Limited Use</h2>
+    <p>The use of information received through the Shadow AI extension adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements. The extension’s single purpose is to detect sensitive data before it is sent to AI tools.</p>
+
+    <h2>12. Changes</h2>
+    <p>We will post changes on this page and update the date above; material changes will be notified to workspace admins by email.</p>
+
+    <p class="legal-note">This document describes how the product works as built. Have it reviewed by a qualified lawyer for your jurisdiction and fill in the highlighted items before public launch.</p>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-brand"><img src="assets/favicon.svg" alt="" width="20" height="20" /><span>SHADOW AI</span></div>
+    <p class="footer-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="cookies.html">Cookies</a></p>
+    <p class="footer-rights">© 2026 @ShadowAI. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

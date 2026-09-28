@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Shadow AI Guard — IT Dashboard</title>
+  <link rel="icon" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/app-theme.css" />
+</head>
+<body class="app">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/favicon.svg" alt="" width="24" height="24" />
+      <div>
+        <strong id="companyLabel">Shadow AI Guard</strong>
+        <div class="topbar-meta" id="rangeLabel">Loading…</div>
+      </div>
+    </div>
+    <nav class="topnav" role="tablist" aria-label="Dashboard sections">
+      <button class="tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+      <button class="tab" role="tab" data-tab="tuning" aria-selected="false">Tuning &amp; compliance</button>
+      <button class="tab" role="tab" data-tab="policies" aria-selected="false">Policies &amp; detection</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="joincode" id="joinCode" title="Employees enter this in the extension">
+        <span>Join code</span><b id="joinCodeValue">—</b>
+      </div>
+      <select id="rangeSelect" style="width:auto">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="3650">All time</option>
+      </select>
+      <div class="profile-menu">
+        <button class="avatar-btn" id="avatarBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu" aria-label="Profile menu">
+          <span class="avatar" id="avatarInitial">·</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="menu" id="profileMenu" role="menu" hidden>
+          <div class="menu-head">
+            <span class="avatar avatar-lg" id="menuAvatar">·</span>
+            <div><b id="menuEmail">—</b><small id="menuRole">Admin</small></div>
+          </div>
+          <button type="button" role="menuitem" class="menu-item" id="menuProfile">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+            Profile &amp; settings
+          </button>
+          <div class="menu-sep"></div>
+          <button type="button" role="menuitem" class="menu-item menu-danger" id="signOutBtn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M12 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7"/></svg>
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="alert" class="alert" hidden></div>
+
+    <section class="page-hero" id="pageHero">
+      <span class="hero-pill">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        Shadow AI · IT dashboard
+      </span>
+      <h1>Your AI activity, <span class="grad-text">at a glance.</span></h1>
+      <p>What was caught, where it was headed and what your team chose to do — built from metadata only, never the message itself.</p>
+    </section>
+
+
+    <section class="tab-panel" id="tab-overview" data-tab="overview">
+      <!-- ============ Feature 18: weekly digest ============ -->
+      <div class="card digest" id="digestCard">
+        <h3>This week, in plain language</h3>
+        <p class="digest-text" id="digestText">Loading…</p>
+      </div>
+
+      <!-- ============ stat tiles ============ -->
+      <div class="section-head">
+        <h2>Overview</h2>
+        <p id="overviewMeta"></p>
+      </div>
+      <div class="tiles" id="tiles"></div>
+
+
+      <!-- ============ activity + departments ============ -->
+      <div class="section-head"><h2>Activity</h2></div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Flagged events over time</h3>
+          <p class="card-sub">Typed messages and file uploads, by day.</p>
+          <div class="chart-box"><canvas id="timeChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h3>Where it's happening</h3>
+          <p class="card-sub">Flagged events by department (Feature 17).</p>
+          <div class="chart-box"><canvas id="deptChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:14px">
+        <div class="card">
+          <h3>What's being caught</h3>
+          <p class="card-sub">The detection categories firing most often.</p>
+          <div class="chart-box tall"><canvas id="patternChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h3>Risk level</h3>
+          <p class="card-sub">Severity distribution across all flagged events.</p>
+          <div class="chart-box"><canvas id="riskChart"></canvas></div>
+          <div class="legend" id="riskLegend"></div>
+        </div>
+      </div>
+
+      <div class="privacy-banner">
+        <strong>What this dashboard can and cannot show you.</strong>
+        Every number here is built from event metadata: a category, a hostname, a department,
+        an action, and an anonymous ID. There is no view, query, or export that reveals what
+        an employee wrote or which file they attached — the <code>flagged_events</code> table has no
+        column capable of holding it. You also cannot map an anonymous ID back to a person:
+        that mapping lives in a table your admin account is denied access to by row-level security.
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-tuning" data-tab="tuning" hidden>
+      <!-- ============ self-improvement ============ -->
+      <div class="section-head">
+        <h2>Tuning &amp; escalation</h2>
+        <p>Signals that tell you where the tool is wrong, and where people are routing around it.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>False positives</h3>
+          <p class="card-sub">What employees told us we got wrong (Feature 13). Use this to retire noisy rules.</p>
+          <div id="fpTable"><p class="skeleton">Loading…</p></div>
+        </div>
+
+        <div class="card">
+          <h3>Repeated overrides</h3>
+          <p class="card-sub">
+            Anonymous IDs that chose "send anyway" on High-risk matches three or more
+            times in 30 days (Feature 14). Deliberately not tied to a name.
+          </p>
+          <div id="overrideTable"><p class="skeleton">Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- ============ compliance + tools ============ -->
+      <div class="section-head">
+        <h2>Compliance &amp; shadow tools</h2>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Compliance framework exposure</h3>
+          <p class="card-sub">
+            Which regulation each detection maps to (Feature 16).
+            A triage signal to help you prioritise — not a legal compliance determination.
+          </p>
+          <div class="chart-box"><canvas id="complianceChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h3>AI tools discovered</h3>
+          <p class="card-sub">Tools people are actually opening, beyond the ones we inspect (Feature 15).</p>
+          <div id="toolsTable"><p class="skeleton">Loading…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-policies" data-tab="policies" hidden>
+      <!-- ============ Feature 8: policy engine ============ -->
+      <div class="section-head">
+        <h2>Policy engine</h2>
+        <p>Changes reach every extension within seconds — no redeploy.</p>
+      </div>
+      <div class="card">
+        <h3>Enforcement tier by detection type</h3>
+        <p class="card-sub">
+          <b>Warn</b> shows the employee a redacted preview and lets them decide.
+          <b>Mandatory redaction</b> removes it with no override.
+          Honeytoken matches are always mandatory and cannot be changed here — a confirmed leak isn't a policy question.
+        </p>
+        <div id="policyTable"><p class="skeleton">Loading…</p></div>
+      </div>
+
+      <!-- ============ Features 3, 9, 11: config ============ -->
+      <div class="section-head"><h2>Detection configuration</h2></div>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>Honeytokens</h3>
+          <p class="card-sub">Fake identifiers planted in real documents. A match is a confirmed leak, not a guess.</p>
+          <div class="inline-form">
+            <input type="text" id="honeytokenInput" placeholder="ACME-HT-9F3K2Q" />
+            <button class="btn btn-primary" id="addHoneytoken">Add</button>
+          </div>
+          <div id="honeytokenList"><p class="skeleton">Loading…</p></div>
+        </div>
+
+        <div class="card">
+          <h3>Custom keywords</h3>
+          <p class="card-sub">Your client names, project codenames, internal product names.</p>
+          <div class="inline-form">
+            <input type="text" id="keywordInput" placeholder="Project Northstar" />
+            <button class="btn btn-primary" id="addKeyword">Add</button>
+          </div>
+          <div id="keywordList"><p class="skeleton">Loading…</p></div>
+        </div>
+
+        <div class="card">
+          <h3>Approved AI tool</h3>
+          <p class="card-sub">Offered as a one-click alternative when something is flagged (Feature 11).</p>
+          <label class="field">
+            <span>Tool name</span>
+            <input type="text" id="sanctionedName" placeholder="Acme Internal AI" />
+          </label>
+          <label class="field">
+            <span>URL</span>
+            <input type="url" id="sanctionedUrl" placeholder="https://ai.acme.internal" />
+          </label>
+          <button type="button" class="btn btn-primary btn-full" id="saveSanctioned">Save</button>
+          <div id="sanctionedList"><p class="skeleton">Loading…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Events page: opened from an overview block ============ -->
+    <section class="tab-panel view-page" id="tab-events" data-tab="events" hidden>
+      <button type="button" class="back-btn" data-back>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to dashboard
+      </button>
+      <div class="view-head">
+        <span class="hero-pill hero-pill-sm">Event details</span>
+        <h1 id="drillTitle">Events</h1>
+        <p id="drillBlurb"></p>
+        <p class="view-meta" id="drillCount"></p>
+      </div>
+      <div class="ev-stats" id="drillStats"></div>
+      <div class="card ev-card">
+        <div class="ev-toolbar">
+          <input type="search" id="drillSearch" placeholder="Search by tool, department, detection, risk, action or anonymous ID…" />
+          <span class="live" id="liveStamp">Live · refreshes every 30 seconds</span>
+        </div>
+        <div id="drillTable"></div>
+      </div>
+      <p class="note ev-note">
+        Event metadata only — what was detected, where, and what the employee chose.
+        The message or file that triggered it is never captured, stored or sent to any server.
+      </p>
+    </section>
+
+    <section class="tab-panel view-page" id="tab-profile" data-tab="profile" hidden>
+      <button type="button" class="back-btn" data-back>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to dashboard
+      </button>
+      <div class="section-head">
+        <h2>Profile</h2>
+        <p>Your admin account, alert settings and sign-in methods.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Account</h3>
+          <p class="card-sub">Who you're signed in as, and the workspace you manage.</p>
+          <dl class="kv">
+            <dt>Email</dt><dd id="profEmail">—</dd>
+            <dt>Role</dt><dd id="profRole">—</dd>
+            <dt>Member since</dt><dd id="profSince">—</dd>
+            <dt>Last sign-in</dt><dd id="profLastSignIn">—</dd>
+            <dt>Join code</dt><dd class="mono" id="profJoinCode">—</dd>
+          </dl>
+          <label class="field">
+            <span>Company name</span>
+            <input type="text" id="profCompanyName" maxlength="120" />
+          </label>
+          <button type="button" class="btn btn-primary" id="saveCompanyName">Save company name</button>
+        </div>
+
+        <div class="card">
+          <h3>Alerts &amp; digest</h3>
+          <p class="card-sub">Where critical alerts and the weekly summary are emailed. The notifier reads these on every run.</p>
+          <label class="field">
+            <span>Alert email</span>
+            <input type="email" id="profNotifyEmail" maxlength="320" />
+          </label>
+          <label class="check">
+            <input type="checkbox" id="profDigest" />
+            <span>Send me the weekly digest email</span>
+          </label>
+          <button type="button" class="btn btn-primary" id="saveNotify">Save alert settings</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Team members</h2>
+        <p id="membersMeta"></p>
+      </div>
+      <div class="card">
+        <h3>Who has joined with code <span class="mono" id="membersJoinCode">—</span></h3>
+        <p class="card-sub">
+          Everyone who installed the extension and signed in with your join code. This shows
+          who is enrolled, not what anyone did — activity stays under anonymous IDs, and this
+          list deliberately contains none.
+        </p>
+        <div id="memberList"><p class="skeleton">Loading…</p></div>
+      </div>
+
+      <div class="section-head">
+        <h2>Sign-in &amp; security</h2>
+        <p>How you sign in to this dashboard.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Sign-in methods</h3>
+          <p class="card-sub">Password and single sign-on (SSO) connected to this account.</p>
+          <div id="identityList"><p class="skeleton">Loading…</p></div>
+          <button type="button" class="btn btn-secondary btn-full" id="linkGoogle">Connect Google sign-in (SSO)</button>
+          <p class="note">
+            Google SSO needs the Google provider enabled in Supabase (docs/SETUP.md step 3b) and
+            <b>Manual linking</b> turned on under Authentication &rarr; Settings.
+            Enterprise SAML SSO (Okta, Azure AD) is available on Supabase's Pro plan.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Password</h3>
+          <p class="card-sub">Set or change the password for email sign-in. At least 8 characters.</p>
+          <label class="field">
+            <span>New password</span>
+            <input type="password" id="newPassword" autocomplete="new-password" />
+          </label>
+          <label class="field">
+            <span>Confirm new password</span>
+            <input type="password" id="confirmPassword" autocomplete="new-password" />
+          </label>
+          <button type="button" class="btn btn-primary" id="savePassword">Update password</button>
+          <div class="divider">sessions</div>
+          <button type="button" class="btn btn-secondary btn-full" id="signOutAll">Sign out on all devices</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/charts.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+/* =====================================================================
+   Shadow AI Guard — in-page interstitial
+   Loaded INTO A SHADOW ROOT, so the host site's CSS cannot reach these
+   rules and these rules cannot reach the host site. ChatGPT and Claude
+   both ship aggressive global styles; without shadow DOM this modal
+   would inherit them and break differently on each site.
+   ===================================================================== */
+
+:host {
+  all: initial;
+}
+
+.sag-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;            /* above every host-site overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(9, 11, 16, 0.62);
+  backdrop-filter: blur(3px);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  animation: sag-fade 140ms ease-out;
+}
+
+@keyframes sag-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sag-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.sag-card {
+  width: min(560px, 100%);
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #101828;
+  border-radius: 14px;
+  box-shadow: 0 24px 64px rgba(16, 24, 40, 0.28), 0 0 0 1px rgba(16, 24, 40, 0.06);
+  overflow: hidden;
+  animation: sag-rise 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* ---------- header ---------- */
+.sag-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.sag-mark {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.sag-mark[data-tier="Warn"]               { background: #fef0c7; color: #b54708; }
+.sag-mark[data-tier="MandatoryRedaction"] { background: #fee4e2; color: #b42318; }
+.sag-mark[data-confirmed="true"]          { background: #ece9fe; color: #5925dc; }
+
+.sag-titles { flex: 1 1 auto; min-width: 0; }
+
+.sag-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.sag-sub {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #475467;
+}
+
+.sag-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #667085;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sag-close:hover { background: #f2f4f7; color: #101828; }
+
+/* ---------- body ---------- */
+.sag-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.sag-section-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #667085;
+}
+
+/* ---------- findings (Feature 19: always show the LABEL) ---------- */
+.sag-findings { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+
+.sag-finding {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  font-size: 13px;
+}
+
+.sag-finding[data-confirmed="true"] {
+  background: #f9f5ff;
+  border-color: #d9d6fe;
+}
+
+.sag-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+}
+.sag-dot[data-risk="High"]   { background: #d92d20; }
+.sag-dot[data-risk="Medium"] { background: #f79009; }
+.sag-dot[data-risk="Low"]    { background: #2e90fa; }
+
+.sag-finding-label { flex: 1 1 auto; font-weight: 520; color: #101828; }
+
+.sag-count {
+  font-size: 11px;
+  color: #475467;
+  background: #eaecf0;
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sag-chip {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #ece9fe;
+  color: #5925dc;
+}
+
+/* ---------- redaction preview ---------- */
+.sag-preview {
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  background: #fcfcfd;
+  padding: 11px 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #344054;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 190px;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.sag-preview mark {
+  background: #d1fadf;
+  color: #027a48;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-weight: 620;
+  font-family: inherit;
+}
+
+/* confirmed-leak substitutions (honeytoken matches) get a distinct colour
+   from ordinary redactions, so a genuine leak still reads as more serious
+   even though the text now flows naturally instead of showing a bracket tag. */
+.sag-preview mark[data-confirmed="true"] {
+  background: #ece9fe;
+  color: #5925dc;
+}
+
+.sag-reassure {
+  margin: 9px 0 0;
+  font-size: 12px;
+  color: #475467;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ---------- file mode ---------- */
+.sag-file {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  margin-bottom: 16px;
+}
+.sag-file-icon { font-size: 20px; }
+.sag-file-name {
+  font-size: 13px; font-weight: 600; color: #101828;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sag-file-meta { font-size: 11.5px; color: #667085; }
+
+.sag-steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #344054;
+}
+.sag-steps li { margin-bottom: 3px; }
+
+/* ---------- compliance footnote ---------- */
+.sag-frameworks {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
+}
+.sag-framework {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff8ff;
+  color: #175cd3;
+  border: 1px solid #b2ddff;
+}
+.sag-disclaimer {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #98a2b3;
+  line-height: 1.5;
+}
+
+/* ---------- actions ---------- */
+.sag-foot {
+  padding: 14px 20px 16px;
+  border-top: 1px solid #eaecf0;
+  background: #fcfcfd;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.sag-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 120ms ease, border-color 120ms ease;
+  font-family: inherit;
+}
+
+.sag-btn-primary { background: #1570ef; color: #fff; }
+.sag-btn-primary:hover { background: #175cd3; }
+
+.sag-btn-danger { background: #d92d20; color: #fff; }
+.sag-btn-danger:hover { background: #b42318; }
+
+.sag-btn-secondary { background: #fff; color: #344054; border-color: #d0d5dd; }
+.sag-btn-secondary:hover { background: #f9fafb; }
+
+.sag-btn-quiet {
+  background: transparent;
+  color: #667085;
+  font-weight: 520;
+  font-size: 12.5px;
+  padding: 7px;
+  border: 0;
+}
+.sag-btn-quiet:hover { color: #101828; text-decoration: underline; }
+
+.sag-row { display: flex; gap: 9px; }
+.sag-row .sag-btn { width: auto; flex: 1 1 0; }
+
+/* ---------- false-positive panel (Feature 13) ---------- */
+.sag-fp { display: flex; flex-direction: column; gap: 8px; }
+.sag-fp-title { font-size: 12.5px; color: #344054; font-weight: 560; }
+.sag-fp-chips { display: flex; flex-direction: column; gap: 6px; }
+
+.sag-fp-chip {
+  text-align: left;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  font-size: 12.5px;
+  color: #344054;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sag-fp-chip:hover { border-color: #1570ef; background: #eff8ff; color: #175cd3; }
+
+/* ---------- toast ---------- */
+.sag-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  background: #101828;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.3);
+  animation: sag-rise 160ms ease-out;
+}
+
+/* ---------- dark mode: both target sites default to dark ---------- */
+@media (prefers-color-scheme: dark) {
+  .sag-card { background: #16181d; color: #f5f6f7; box-shadow: 0 24px 64px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.07); }
+  .sag-head, .sag-foot { border-color: #2a2e38; }
+  .sag-foot { background: #1b1e25; }
+  .sag-sub, .sag-section-label, .sag-file-meta, .sag-reassure { color: #98a2b3; }
+  .sag-finding { background: #1b1e25; border-color: #2a2e38; }
+  .sag-finding[data-confirmed="true"] { background: #231b3d; border-color: #43348a; }
+  .sag-finding-label, .sag-file-name { color: #f5f6f7; }
+  .sag-count { background: #2a2e38; color: #cdd2db; }
+  .sag-preview { background: #1b1e25; border-color: #2a2e38; color: #cdd2db; }
+  .sag-preview mark { background: #074d31; color: #75e0a7; }
+  .sag-preview mark[data-confirmed="true"] { background: #231b3d; color: #b8a8f9; }
+  .sag-file, .sag-steps { color: #cdd2db; }
+  .sag-file { background: #1b1e25; border-color: #2a2e38; }
+  .sag-btn-secondary { background: #1b1e25; color: #e4e7ec; border-color: #3a3f4b; }
+  .sag-btn-secondary:hover { background: #22262f; }
+  .sag-fp-chip { background: #1b1e25; border-color: #3a3f4b; color: #cdd2db; }
+  .sag-close:hover { background: #2a2e38; color: #f5f6f7; }
+  .sag-framework { background: #102a4c; color: #84caff; border-color: #1849a9; }
+}
+
+/* ---------- "+N more" collapse (keeps the popup readable) ---------- */
+.sag-more {
+  align-self: flex-start;
+  margin-top: 1px;
+  padding: 5px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #1570ef;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+.sag-more:hover { background: #eff8ff; }
+
+/* ---------- caveat about a less-specific answer ---------- */
+.sag-caveat {
+  margin: 7px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #667085;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* ---------- extraction progress (avoids "is it broken?" pauses) ---------- */
+.sag-progress {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #101828;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.3);
+}
+.sag-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sag-spin 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+@keyframes sag-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-color-scheme: dark) {
+  .sag-more { color: #84caff; }
+  .sag-more:hover { background: #102a4c; }
+  .sag-caveat { color: #98a2b3; }
+}
+
+/* [hidden] is only `display: none` in the UA stylesheet, so any class rule
+   setting `display` beats it on specificity and the element stays visible.
+   Anything toggled via el.hidden needs this guard. */
+[hidden] { display: none !important; }

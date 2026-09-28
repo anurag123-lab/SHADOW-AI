@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Shadow AI Guard — Options</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="../../icons/icon128.png" alt="" width="40" height="40" />
+      <div>
+        <h1>Shadow AI Guard</h1>
+        <p class="sub">Extension options and detection playground</p>
+      </div>
+    </header>
+
+    <!-- ================= playground ================= -->
+    <section class="card">
+      <h2>Detection playground</h2>
+      <p class="card-sub">
+        Paste anything here to see exactly what the detector would flag and why.
+        This runs entirely in this page — nothing is sent anywhere, and no event is logged.
+      </p>
+
+      <textarea id="playground" rows="7" placeholder="Try: my card is 4111 1111 1111 1111 and the cap table is attached, ping me at me@acme.com"></textarea>
+
+      <div class="samples">
+        <span>Try:</span>
+        <button class="sample" data-text="Here's my card 4111 1111 1111 1111, please process the refund.">card number</button>
+        <button class="sample" data-text="Use this key sk-proj-abc123XYZ456def789GHI012jkl to test the endpoint.">API key</button>
+        <button class="sample" data-text="The cap table and the board minutes are in the attached deck. CONFIDENTIAL.">business terms</button>
+        <button class="sample" data-text="Can you summarise this article into three bullet points for me?">clean text</button>
+      </div>
+
+      <div id="verdict" class="verdict" hidden></div>
+      <div id="findings" class="findings"></div>
+      <div id="previewWrap" hidden>
+        <h3>Redacted version</h3>
+        <div id="preview" class="preview"></div>
+      </div>
+    </section>
+
+    <!-- ================= connection ================= -->
+    <section class="card">
+      <h2>Workspace connection</h2>
+      <p class="card-sub">Overrides the values compiled into the extension. Useful when demoing on another machine.</p>
+      <label class="field">
+        <span>Supabase project URL</span>
+        <input type="url" id="url" placeholder="https://xxxx.supabase.co" />
+      </label>
+      <label class="field">
+        <span>Anon public key</span>
+        <input type="password" id="key" placeholder="eyJhbGciOi..." />
+      </label>
+      <button class="btn btn-primary" id="saveBtn">Save connection</button>
+      <p class="note" id="saveNote" hidden></p>
+    </section>
+
+    <!-- ================= cached config ================= -->
+    <section class="card">
+      <h2>Cached configuration</h2>
+      <p class="card-sub">
+        What this extension currently holds locally. Policies, honeytokens and keywords are
+        managed by your IT team in the dashboard and synced here.
+      </p>
+      <div id="cacheView" class="cache">Loading…</div>
+      <button class="btn btn-secondary" id="syncBtn">Sync now</button>
+    </section>
+
+    <!-- ================= privacy ================= -->
+    <section class="card privacy-card">
+      <h2>What this extension sends</h2>
+      <p>
+        When something is flagged, one row is recorded containing: the <strong>category</strong> of what was
+        found (for example "payment card number"), the AI tool's <strong>hostname</strong>, your
+        <strong>department</strong>, the <strong>action</strong> you chose, and an <strong>anonymous ID</strong>.
+      </p>
+      <p>
+        It does not send your message, your file, the matched text, your name, or your email address.
+        The database this writes to has no column capable of storing message content — that is enforced by
+        the database schema itself, not by a promise in this page.
+      </p>
+      <p class="note">
+        Detection, redaction previews and every decision happen locally in your browser.
+        The extension works with no network connection; events queue and send later.
+      </p>
+    </section>
+  </div>
+
+  <script src="../core/patterns.js"></script>
+  <script src="../core/detector.js"></script>
+  <script src="../core/config.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

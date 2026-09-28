@@ -1,0 +1,27 @@
+{
+  "name": "shadow-ai-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shadow AI Guard - local-first sensitive-data detection for AI tools, with metadata-only telemetry.",
+  "scripts": {
+    "test": "node --test extension/tests/*.test.js",
+    "test:watch": "node --test --watch extension/tests/*.test.js",
+    "serve:dashboard": "node scripts/serve-dashboard.js",
+    "seed": "node scripts/seed-demo-data.js",
+    "notifier": "node notifier/index.js",
+    "digest": "node notifier/digest.js",
+    "preflight": "node scripts/preflight.js",
+    "demo:files": "node scripts/make-demo-files.js",
+    "demo:patterns": "node scripts/make-pattern-tests.js",
+    "sync-config": "node scripts/sync-config.js",
+    "notifier:verify": "node notifier/index.js --verify",
+    "notifier:test": "node notifier/test-alert.js",
+    "test:auth": "node scripts/build-auth-test.js",
+    "notifier:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 install",
+    "notifier:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 status",
+    "notifier:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 uninstall"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

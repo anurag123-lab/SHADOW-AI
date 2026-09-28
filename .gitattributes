@@ -1,0 +1,12 @@
+# Let Git handle line endings for normal text files
+* text=auto
+
+# Binary files — never convert (PDFs here look like text, but aren't)
+*.pdf   binary
+*.docx  binary
+*.png   binary
+*.ico   binary
+
+# Windows scripts must keep Windows line endings
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf

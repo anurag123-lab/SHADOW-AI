@@ -1,0 +1,24 @@
+{
+  "name": "shadow-ai-guard-notifier",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Email alerting and weekly digest for Shadow AI Guard.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "once": "node index.js --once",
+    "verify": "node index.js --verify",
+    "digest": "node digest.js",
+    "test": "node test-alert.js",
+    "clean": "node test-alert.js --clean",
+    "status": "node status.js",
+    "reset-password": "node reset-password.js",
+    "test:multiuser": "node test-multiuser.js",
+    "test:multiuser:clean": "node test-multiuser.js --clean"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.9.15"
+  }
+}

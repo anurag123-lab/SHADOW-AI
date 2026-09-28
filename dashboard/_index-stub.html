@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Shadow AI Guard — Use AI freely, leak nothing</title>
+  <meta name="description" content="Local-first data-leak protection for ChatGPT, Claude and Gemini. Catches card numbers, API keys, customer data and confidential terms before they're sent — and never reads or stores the message." />
+  <link rel="icon" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/landing.css" />
+</head>
+<body class="landing">
+  <!-- Persistent background: CSS blobs paint instantly, the 3D marble fades in on top once loaded.
+       Tune it here:
+         data-intensity  0 = the soft original fog look · 1 = full vivid marble  (default 0.85)
+         data-speed      flow speed multiplier                                    (default 1)
+         data-calm       how much it softens once you scroll past the hero, 0–1   (default 0.35) -->
+  <div id="bg" aria-hidden="true" data-intensity="0.85" data-speed="1" data-calm="0.35">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ===================== NAV ===================== -->
+  <header class="nav" id="nav">
+    <a class="nav-brand" href="#top" data-route="landing">
+      <img src="assets/favicon.svg" alt="" width="26" height="26" />
+      <span>SHADOW AI</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks" aria-label="Main">
+      <a href="#top" data-route="landing" class="is-active">Home</a>
+      <a href="#features" data-route="landing">Features</a>
+      <a href="#how" data-route="landing">How it works</a>
+      <a href="#privacy" data-route="landing">Privacy</a>
+      <a href="#teams" data-route="landing">For teams</a>
+      <a href="#faq" data-route="landing">FAQ</a>
+      <a href="#signin" class="menu-only" data-route="signin">Sign in</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a href="#signin" class="nav-signin" id="navSignIn" data-route="signin">Sign in</a>
+      <a href="#signup" class="pill-btn pill-btn-light" id="navCta" data-route="signup">Get started <span aria-hidden="true">↗</span></a>
+      <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== PAGE: LANDING ===================== -->
+  <main class="page active" id="page-landing">
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <p class="eyebrow rise" style="--d:1">For teams using ChatGPT, Claude &amp; Gemini</p>
+      <h1 class="hero-title rise" style="--d:2">
+        <span class="accent">Use AI</span> freely.<br />
+        <span class="accent">Leak</span> nothing.
+      </h1>
+      <p class="hero-sub rise" style="--d:3">
+        Shadow AI Guard catches card numbers, API keys, customer data and confidential terms
+        <b>before</b> they're sent to an AI tool — right in the browser. IT sees what was
+        caught. Nobody, not even us, sees what was typed.
+      </p>
+      <div class="hero-ctas rise" style="--d:4">
+        <a href="#signup" class="pill-btn pill-btn-solid" data-route="signup">Create your workspace <span aria-hidden="true">↗</span></a>
+        <a href="#how" class="pill-btn pill-btn-outline" data-route="landing">See how it works</a>
+      </div>
+      <ul class="hero-tools rise" style="--d:5" aria-label="Protected tools">
+        <li>ChatGPT</li><li>Claude</li><li>Gemini</li><li>+ 12 AI sites discovered</li>
+      </ul>
+
+      <a href="#features" class="explore" data-route="landing">explore features</a>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats glass reveal" aria-label="At a glance">
+      <div><b>19</b><span>detection types, from card numbers to trade secrets</span></div>
+      <div><b>0</b><span>messages or files stored — there's no column for them</span></div>
+      <div><b>3</b><span>AI tools protected for text <em>and</em> file uploads</span></div>
+      <div><b>~1s</b><span>for a policy change to reach every browser</span></div>
+    </section>
+
+    <!-- WHAT IT CATCHES -->
+    <section class="section" id="features">
+      <div class="section-intro reveal">
+        <p class="eyebrow">What it catches</p>
+        <h2>Nineteen ways data slips out. <span class="accent">All caught locally.</span></h2>
+        <p>Detection runs inside the employee's browser. Card numbers are Luhn-checked, keys are matched by vendor prefix, and a 55-sentence benign corpus keeps false alarms down.</p>
+      </div>
+
+      <div class="catch-grid">
+        <article class="catch glass reveal">
+          <div class="catch-head">
+            <span class="catch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+            <div><h3>Personal data</h3><span class="catch-law">GDPR · DPDP Act · HIPAA</span></div>
+          </div>
+          <p class="catch-why">Customer and employee identities that should never reach a third-party model.</p>
+          <ul class="chips chips-dark"><li>Email addresses</li><li>Phone numbers</li><li>PAN</li><li>Health records</li></ul>
+        </article>
+        <article class="catch glass reveal">
+          <div class="catch-head">
+            <span class="catch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg></span>
+            <div><h3>Financial</h3><span class="catch-law">PCI DSS · DPDP Act</span></div>
+          </div>
+          <p class="catch-why">Payment and banking identifiers. Card numbers are Luhn-checked, so order numbers don't trip it.</p>
+          <ul class="chips chips-dark"><li>Card numbers</li><li>GSTIN</li><li>IFSC codes</li></ul>
+        </article>
+        <article class="catch glass reveal">
+          <div class="catch-head">
+            <span class="catch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></svg></span>
+            <div><h3>Secrets &amp; infrastructure</h3><span class="catch-law">Security policy</span></div>
+          </div>
+          <p class="catch-why">Credentials that give access to your systems. A live key is always a mandatory redaction.</p>
+          <ul class="chips chips-dark"><li>API keys</li><li>AWS keys</li><li>Private keys</li><li>High-entropy secrets</li><li>Internal IPs</li></ul>
+        </article>
+        <article class="catch glass reveal">
+          <div class="catch-head">
+            <span class="catch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></span>
+            <div><h3>Business context</h3><span class="catch-law">Internal policy</span></div>
+          </div>
+          <p class="catch-why">The language of deals, people and plans — often more damaging than any single number.</p>
+          <ul class="chips chips-dark"><li>"Confidential" markers</li><li>Legal terms</li><li>HR terms</li><li>Strategy &amp; finance</li><li>Trade secrets</li></ul>
+        </article>
+        <article class="catch glass reveal">
+          <div class="catch-head">
+            <span class="catch-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6"/></svg></span>
+            <div><h3>Your own signals</h3><span class="catch-law">Confirmed leak detection</span></div>
+          </div>
+          <p class="catch-why">Client names and project codenames you define, plus planted honeytokens — a match is proof, not a guess.</p>
+          <ul class="chips chips-dark"><li>Custom keywords</li><li>Honeytokens</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+      <div class="section-intro reveal">
+        <p class="eyebrow">How it works</p>
+        <h2>A guardrail, <span class="accent">not a cage.</span></h2>
+      </div>
+
+      <div class="how">
+        <ol class="steps">
+          <li class="glass reveal">
+            <span class="step-n">01</span>
+            <h3>Detect before send</h3>
+            <p>The extension scans what's typed or uploaded the moment Enter is pressed — text, PDF, Word, CSV, JSON, logs and more.</p>
+          </li>
+          <li class="glass reveal">
+            <span class="step-n">02</span>
+            <h3>The employee decides</h3>
+            <p>A plain-English warning shows what was found and a redacted version. Low risk: <b>Send redacted</b> or <b>Send anyway</b>. High risk: redaction is mandatory.</p>
+          </li>
+          <li class="glass reveal">
+            <span class="step-n">03</span>
+            <h3>IT sees metadata only</h3>
+            <p>The dashboard gets a category, a tool, a department and an anonymous ID. Never the message, never the file.</p>
+          </li>
+        </ol>
+
+        <!-- Product preview: what the employee sees -->
+        <div class="preview glass reveal" aria-label="Example of the warning an employee sees">
+          <div class="preview-head">
+            <span class="preview-brand"><img src="assets/favicon.svg" alt="" width="20" height="20" /> Shadow AI</span>
+            <span class="status-pill">Protected</span>
+          </div>
+          <p class="preview-title">2 sensitive items caught before sending</p>
+          <p class="preview-sub">Your message to ChatGPT was checked on this device.</p>
+          <ul class="preview-list">
+            <li>
+              <span class="pi pi-high" aria-hidden="true"></span>
+              <div><b>Payment card number</b><small>PCI DSS</small></div>
+              <span class="risk risk-high">High</span>
+            </li>
+            <li>
+              <span class="pi pi-low" aria-hidden="true"></span>
+              <div><b>Email address</b><small>GDPR</small></div>
+              <span class="risk risk-low">Low</span>
+            </li>
+          </ul>
+          <div class="preview-note">
+            Both will be replaced with safe placeholders, so the request still makes sense to the AI.
+          </div>
+          <div class="preview-actions">
+            <span class="pv-btn pv-btn-primary">Send protected version</span>
+            <span class="pv-btn">Use approved AI</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURE GRID -->
+    <section class="section">
+      <div class="section-intro reveal">
+        <p class="eyebrow">Built for IT</p>
+        <h2>Everything IT needs. <span class="accent">Nothing it shouldn't see.</span></h2>
+      </div>
+      <div class="carousel reveal">
+        <button class="car-btn car-prev" id="carPrev" type="button" aria-label="Previous feature" disabled>
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="feature-track" id="featureTrack" tabindex="0" aria-label="Features">
+        <article class="feature glass"><h3>Works where your team does</h3><p>ChatGPT, Claude and Gemini are covered for both typed messages and file uploads, with no change to how people work.</p></article>
+        <article class="feature glass"><h3>Realistic redaction</h3><p>Sensitive values are swapped for safe placeholders — a test card number, an example.com email — so the request still makes sense to the AI.</p></article>
+        <article class="feature glass"><h3>File upload scanning</h3><p>PDFs, Word documents, CSV exports, logs and config files are read on the device and warned or blocked before they upload.</p></article>
+        <article class="feature glass"><h3>Live policy engine</h3><p>Choose Warn or Mandatory for each type of data. Changes reach every browser in about a second, with no redeploy.</p></article>
+        <article class="feature glass"><h3>Honeytokens</h3><p>Plant unique markers in real documents. If one is ever pasted into an AI tool, it's a confirmed leak, and IT is alerted by email.</p></article>
+        <article class="feature glass"><h3>Approved AI redirect</h3><p>Offer your company's sanctioned AI tool as a one-click alternative, right inside the warning.</p></article>
+        <article class="feature glass"><h3>Event drill-down</h3><p>Click any number on the dashboard to see the events behind it — what was caught, where and when — updating every 30 seconds.</p></article>
+        <article class="feature glass"><h3>Shadow AI discovery</h3><p>See which other AI sites people actually use, such as Perplexity or Poe, without inspecting a single page.</p></article>
+        <article class="feature glass"><h3>Compliance tagging</h3><p>Each event is mapped to GDPR, PCI DSS, HIPAA or India's DPDP Act, so you can prioritise what matters to your auditors.</p></article>
+        <article class="feature glass"><h3>Alerts &amp; weekly digest</h3><p>Confirmed leaks and blocked uploads are emailed right away; a plain-language summary arrives every week.</p></article>
+        <article class="feature glass"><h3>Team roster</h3><p>See who has installed the extension with your join code — without ever linking a person to their activity.</p></article>
+        <article class="feature glass"><h3>Self-tuning</h3><p>Employees flag false positives with a reason, and repeated overrides are escalated — so noisy rules get fixed, not ignored.</p></article>
+        </div>
+        <button class="car-btn car-next" id="carNext" type="button" aria-label="Next feature">
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="car-meta">
+        <div class="car-bar" aria-hidden="true"><i id="carBar"></i></div>
+        <span class="car-count" id="carCount">1–3 / 12</span>
+      </div>
+    </section>
+
+    <!-- PRIVACY (dark band) -->
+    <section class="privacy-band" id="privacy">
+      <div class="privacy-inner">
+        <div class="reveal">
+          <p class="eyebrow eyebrow-light">Privacy by construction</p>
+          <h2>Privacy is a database constraint, <span class="accent-light">not a promise.</span></h2>
+          <p class="privacy-lead">Most tools ask you to trust that they don't look. Shadow AI Guard makes looking impossible — and you can verify it.</p>
+        </div>
+        <div class="privacy-points">
+          <div class="reveal">
+            <h3>Nothing to store it in</h3>
+            <p>The event table has no column that can hold a message. Every text field is length-capped or limited to a fixed list.</p>
+          </div>
+          <div class="reveal">
+            <h3>Nothing leaves the browser</h3>
+            <p>Detection and redaction run locally. Only metadata is sent — built from an explicit allow-list of fields.</p>
+          </div>
+          <div class="reveal">
+            <h3>No way to un-anonymise</h3>
+            <p>The table linking people to anonymous IDs is closed to admins by row-level security. IT sees an anonymous ID, never a name.</p>
+          </div>
+        </div>
+        <div class="compare reveal">
+          <div class="compare-col compare-yes">
+            <h3>What your IT team sees</h3>
+            <ul>
+              <li>What kind of data was caught</li>
+              <li>Which AI tool it was headed to</li>
+              <li>Department and time</li>
+              <li>What the employee chose to do</li>
+              <li>An anonymous ID — never a name</li>
+            </ul>
+          </div>
+          <div class="compare-col compare-no">
+            <h3>What never leaves the browser</h3>
+            <ul>
+              <li>The message itself</li>
+              <li>The contents of uploaded files</li>
+              <li>The sensitive values that were found</li>
+              <li>Who, by name, triggered an alert</li>
+              <li>Anything typed that wasn't flagged</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUDIENCES -->
+    <section class="section" id="teams">
+      <div class="section-intro reveal">
+        <p class="eyebrow">For teams</p>
+        <h2>Two minutes to roll out. <span class="accent">Zero minutes to learn.</span></h2>
+      </div>
+      <div class="audience">
+        <article class="glass reveal">
+          <h3>For employees</h3>
+          <ul class="ticks">
+            <li>Install the extension, sign in, enter the join code</li>
+            <li>Keep using ChatGPT, Claude and Gemini as usual</li>
+            <li>Only interrupted when something sensitive is about to leave</li>
+            <li>Mark false positives in one click</li>
+          </ul>
+        </article>
+        <article class="glass reveal">
+          <h3>For IT &amp; security</h3>
+          <ul class="ticks">
+            <li>Create a workspace and share one join code</li>
+            <li>Tune policies, keywords and honeytokens live</li>
+            <li>Drill into every event — metadata only</li>
+            <li>See who has joined, never who did what</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="section-intro reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2>Questions security teams ask.</h2>
+      </div>
+      <div class="faq">
+        <details class="glass reveal">
+          <summary>Can you see what my employees type?</summary>
+          <p>No. Detection happens in the browser and only metadata is sent: a category, a hostname, a department, an action and an anonymous ID. The database has no column that could hold a message.</p>
+        </details>
+        <details class="glass reveal">
+          <summary>What stops someone just disabling the extension?</summary>
+          <p>It's a guardrail against accidental paste-and-send, which is most real incidents. In production it's deployed through enterprise browser policy, which prevents removal. Honeytokens are the backstop: if content leaves by any route, a match proves it.</p>
+        </details>
+        <details class="glass reveal">
+          <summary>What about paraphrasing instead of pasting?</summary>
+          <p>Out of scope for pattern matching. Catching meaning would require sending the content to a model — which would defeat the privacy design. We chose the guarantee.</p>
+        </details>
+        <details class="glass reveal">
+          <summary>Is this GDPR / HIPAA compliant?</summary>
+          <p>Framework tags are a triage signal to help you prioritise, not a legal determination — we say so in the dashboard and in every email.</p>
+        </details>
+        <details class="glass reveal">
+          <summary>How are false positives handled?</summary>
+          <p>Card numbers are Luhn-validated and a benign corpus must produce zero flags. Employees can mark a false positive with a reason, and the dashboard shows which rules are noisy.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta glass reveal">
+      <h2>Give your team AI <span class="accent">without the leaks.</span></h2>
+      <p>Create a workspace, share the join code, and see your first event in minutes.</p>
+      <div class="hero-ctas">
+        <a href="#signup" class="pill-btn pill-btn-solid" data-route="signup">Create your workspace <span aria-hidden="true">↗</span></a>
+        <a href="#signin" class="pill-btn pill-btn-outline" data-route="signin">Sign in</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-brand">
+        <img src="assets/favicon.svg" alt="" width="20" height="20" />
+        <span>SHADOW AI</span>
+      </div>
+      <p class="footer-links"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms &amp; Conditions</a> · <a href="cookies.html">Cookie Policy</a></p>
+      <p class="footer-rights">© <span id="year">2026</span> @ShadowAI. All Rights Reserved.</p>
+    </footer>
+  </main>
+
+  <!-- ===================== PAGE: SIGN IN / SIGN UP ===================== -->
+  <main class="page" id="page-auth" aria-label="Sign in">
+    <div class="auth-stage">
+      <a href="#top" class="back-link" data-route="landing">← Back to home</a>
+
+      <div class="auth-card glass-strong">
+        <div class="auth-brand">
+          <img src="assets/favicon.svg" alt="" width="30" height="30" />
+          <h1>Shadow AI</h1>
+        </div>
+        <p class="auth-sub">IT dashboard. Employees sign in through the browser extension instead.</p>
+
+        <div id="alert" class="alert" hidden></div>
+
+        <section id="resumePanel" hidden>
+          <p class="resume-label">Already signed in as</p>
+          <p class="resume-email" id="resumeEmail">—</p>
+          <button class="btn btn-primary btn-full" id="continueBtn">Continue to dashboard</button>
+          <button class="btn btn-secondary btn-full" id="switchBtn" style="margin-top:9px">
+            Sign out and use a different account
+          </button>
+        </section>
+
+        <div id="loginForm">
+          <div class="auth-tabs" role="tablist">
+            <button class="auth-tab" id="tabSignIn" role="tab" aria-selected="true">Sign in</button>
+            <button class="auth-tab" id="tabSignUp" role="tab" aria-selected="false">Create account</button>
+          </div>
+
+          <label class="field">
+            <span>Work email</span>
+            <input type="email" id="email" autocomplete="username" placeholder="you@company.com" />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" />
+          </label>
+
+          <label class="field" id="companyField" hidden>
+            <span>Company name</span>
+            <input type="text" id="companyName" placeholder="Acme Corp" />
+          </label>
+
+          <button class="btn btn-primary btn-full" id="submitBtn">Sign in</button>
+          <p class="auth-legal">By continuing you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+
+          <div class="divider"><span>or</span></div>
+
+          <button class="btn btn-secondary btn-full" id="googleBtn">
+            <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.7 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.1 5.5c4.2-3.9 6.6-9.6 6.6-16.4z"/>
+              <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C1 16.3 0 20 0 24s1 7.7 2.6 10.8l7.8-6.1z"/>
+              <path fill="#34A853" d="M24 48c6.1 0 11.3-2 15-5.5l-7.1-5.5c-2 1.4-4.6 2.2-7.9 2.2-6.3 0-11.7-3.7-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div><!-- /#loginForm -->
+
+        <p class="note">
+          This dashboard shows aggregated, anonymised activity. It cannot show you what anyone
+          typed — that data is never collected, and the database has no column that could hold it.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <button class="to-top" id="toTop" aria-label="Back to top" hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <script>
+  /* Test stub — configured by this page's own query string.
+     ?session=1   a cached session exists
+     ?profile=1   that account has an admin workspace
+     ?logout      exercises the sign-out branch (read by auth.js itself) */
+  (function () {
+    var q = new URLSearchParams(window.location.search);
+    var session = q.has("session") ? { user: { email: q.get("email") || "admin@acme.com" } } : null;
+    var profile = q.has("profile") ? { company_id: "c-123" } : null;
+
+    window.__testState = { signedOut: false, redirected: null };
+
+    window.supabase = {
+      createClient: function () {
+        return {
+          auth: {
+            getSession: async function () {
+              return { data: { session: window.__testState.signedOut ? null : session } };
+            },
+            signOut: async function () { window.__testState.signedOut = true; return {}; },
+            signInWithPassword: async function () { return { data: { session: session }, error: null }; },
+            signUp: async function () { return { data: { session: session }, error: null }; },
+            signInWithOAuth: async function () { return { error: null }; },
+          },
+          from: function () {
+            return { select: function () { return { maybeSingle: async function () {
+              return { data: profile, error: null };
+            } }; } };
+          },
+          rpc: async function () { return { data: null, error: null }; },
+        };
+      },
+    };
+  })();
+</script>
+  <script src="assets/config.js"></script>
+  <script src="assets/landing.js"></script>
+  <script src="assets/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+Deployment notes - staging rebuild
+
+The API box at 192.168.10.5 keeps dropping connections after the
+nightly job. Worker at 10.0.12.7 is fine.
+
+Rotate these before Friday:
+  AKIAIOSFODNN7EXAMPLE
+
+Ping me if the health check flaps again.

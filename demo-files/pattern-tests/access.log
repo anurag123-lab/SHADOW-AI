@@ -1,0 +1,4 @@
+10.0.3.21 - - [24/Sep/2026:10:02:11] "POST /login HTTP/1.1" 200 user=r.nair@example.in
+10.0.3.21 - - [24/Sep/2026:10:02:15] "GET /reports HTTP/1.1" 200
+192.168.1.44 - - [24/Sep/2026:10:05:40] "POST /login HTTP/1.1" 401 user=s.iyer@example.in
+172.16.8.9 - - [24/Sep/2026:10:06:02] "GET /health HTTP/1.1" 200

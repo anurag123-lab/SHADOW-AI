@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Shadow AI Guard</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="head">
+    <div class="brand">
+      <img src="../../icons/icon48.png" alt="" width="22" height="22" />
+      <div>
+        <div class="brand-name">Shadow AI Guard</div>
+        <div class="brand-sub" id="brandSub">Checking status...</div>
+      </div>
+    </div>
+    <span class="badge" id="statusBadge" hidden></span>
+  </header>
+
+  <main>
+    <!-- ============ not configured ============ -->
+    <section class="view" id="viewSetup" hidden>
+      <p class="lead">Connect this extension to your company's Shadow AI Guard workspace.</p>
+      <label class="field">
+        <span>Supabase project URL</span>
+        <input type="url" id="setupUrl" placeholder="https://xxxx.supabase.co" />
+      </label>
+      <label class="field">
+        <span>Anon public key</span>
+        <input type="password" id="setupKey" placeholder="eyJhbGciOi..." />
+      </label>
+      <button class="btn btn-primary" id="saveConnection">Save connection</button>
+      <p class="hint">Your IT team provides these. The anon key is designed to be public — access is controlled by row-level security, not by keeping it secret.</p>
+    </section>
+
+    <!-- ============ signed out ============ -->
+    <section class="view" id="viewSignIn" hidden>
+      <p class="lead">Sign in so your activity can be recorded under an anonymous ID.</p>
+
+      <button class="btn btn-google" id="googleBtn">
+        <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.1 5.5c4.2-3.9 6.6-9.6 6.6-16.4z"/>
+          <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C1 16.3 0 20 0 24s1 7.7 2.6 10.8l7.8-6.1z"/>
+          <path fill="#34A853" d="M24 48c6.1 0 11.3-2 15-5.5l-7.1-5.5c-2 1.4-4.6 2.2-7.9 2.2-6.3 0-11.7-3.7-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="divider"><span>or</span></div>
+
+      <label class="field">
+        <span>Work email</span>
+        <input type="email" id="email" placeholder="you@company.com" autocomplete="username" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </label>
+      <div class="row">
+        <button class="btn btn-secondary" id="signUpBtn">Create account</button>
+        <button class="btn btn-primary" id="signInBtn">Sign in</button>
+      </div>
+    </section>
+
+    <!-- ============ signed in, not enrolled ============ -->
+    <section class="view" id="viewEnroll" hidden>
+      <p class="lead">Join your company workspace with the code your IT team shared.</p>
+      <label class="field">
+        <span>Join code</span>
+        <input type="text" id="joinCode" placeholder="A1B2C3D4" maxlength="12" autocapitalize="characters" />
+      </label>
+      <label class="field">
+        <span>Department</span>
+        <select id="department">
+          <option>Engineering</option>
+          <option>Sales</option>
+          <option>Marketing</option>
+          <option>Finance</option>
+          <option>HR</option>
+          <option>Legal</option>
+          <option>Support</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <button class="btn btn-primary" id="enrollBtn">Join workspace</button>
+      <p class="hint">Your department is attached to flagged events so IT can see team-level trends. Your name and email never are.</p>
+    </section>
+
+    <!-- ============ active ============ -->
+    <section class="view" id="viewActive" hidden>
+      <div class="status-card">
+        <div class="status-dot"></div>
+        <div>
+          <div class="status-title" id="companyName">Protected</div>
+          <div class="status-sub" id="anonId">anonymous ID</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="statPolicies">0</div><div class="stat-lbl">policies</div></div>
+        <div class="stat"><div class="stat-num" id="statTokens">0</div><div class="stat-lbl">honeytokens</div></div>
+        <div class="stat"><div class="stat-num" id="statKeywords">0</div><div class="stat-lbl">keywords</div></div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-title">Protection</div>
+          <div class="toggle-sub" id="toggleSub">Scanning is on</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="enabledToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Department</span>
+        <select id="departmentActive">
+          <option>Engineering</option>
+          <option>Sales</option>
+          <option>Marketing</option>
+          <option>Finance</option>
+          <option>HR</option>
+          <option>Legal</option>
+          <option>Support</option>
+          <option>Other</option>
+          <option>Unspecified</option>
+        </select>
+      </label>
+
+      <p class="sync" id="syncLine">Policy last synced —</p>
+
+      <div class="row">
+        <button class="btn btn-secondary" id="syncBtn">Sync now</button>
+        <button class="btn btn-secondary" id="signOutBtn">Sign out</button>
+      </div>
+
+      <p class="privacy">
+        <strong>What leaves this browser:</strong> the category of what was found, your department,
+        and an anonymous ID. Never your message, your file, or your name.
+      </p>
+    </section>
+  </main>
+
+  <div class="alert" id="alert" hidden></div>
+
+  <script src="../core/config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

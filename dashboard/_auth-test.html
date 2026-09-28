@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>auth redirect test</title>
+  <style>
+    body { font: 13px/1.65 ui-monospace, Menlo, Consolas, monospace;
+           background: #0d0d0d; color: #e4e7ec; padding: 20px; margin: 0; }
+    h1 { font-size: 15px; margin: 0 0 4px; }
+    .lead { color: #898781; margin: 0 0 16px; font-size: 12px; max-width: 80ch; }
+    .case { border: 1px solid #2c2c2a; border-radius: 8px; padding: 11px 13px; margin-bottom: 9px; }
+    .pass { border-color: #0ca30c; }
+    .fail { border-color: #d03b3b; background: rgba(208,59,59,.08); }
+    .name { font-weight: 700; margin-bottom: 3px; }
+    .url { color: #52514e; font-size: 11.5px; margin-bottom: 5px; }
+    .verdict { font-weight: 700; margin-bottom: 4px; }
+    .pass .verdict { color: #0ca30c; }
+    .fail .verdict { color: #d03b3b; }
+    .detail { color: #898781; white-space: pre-wrap; }
+    #summary { font-size: 17px; font-weight: 700; margin: 16px 0 12px; }
+    iframe { width: 1px; height: 1px; opacity: 0; position: absolute; }
+  </style>
+</head>
+<body>
+  <h1>Login page — session handling</h1>
+  <p class="lead">Each scenario is a real navigation to _index-stub.html (generated from index.html
+    by scripts/build-auth-test.js) running the real auth.js, with only the Supabase client stubbed.
+    The assertion that matters: the page must never navigate to admin.html on its own.</p>
+  <div id="summary">running…</div>
+  <div id="results"></div>
+  <iframe id="frame"></iframe>
+
+  <script>
+  const SCENARIOS = [
+    { name: "no session",
+      query: "",
+      show: "loginForm", hide: "resumePanel" },
+
+    { name: "session + workspace   (the reported bug)",
+      query: "?session=1&profile=1",
+      show: "resumePanel", hide: "loginForm", expectEmail: "admin@acme.com" },
+
+    { name: "session, no workspace",
+      query: "?session=1&email=new@acme.com",
+      show: "loginForm", hide: "resumePanel" },
+
+    { name: "session + workspace + ?logout",
+      query: "?session=1&profile=1&logout",
+      show: "loginForm", hide: "resumePanel", expectSignOut: true },
+
+    // ---- Google OAuth round trips ----
+    { name: "OAuth return, existing workspace   -> dashboard",
+      query: "?session=1&profile=1&code=fake-pkce-code",
+      expectRedirect: true },
+
+    { name: "OAuth return, first-ever login     -> name your company",
+      query: "?session=1&email=fresh@acme.com&code=fake-pkce-code",
+      show: "loginForm", hide: "resumePanel" },
+
+    { name: "OAuth return, implicit #access_token -> dashboard",
+      query: "?session=1&profile=1", hash: "#access_token=fake&token_type=bearer",
+      expectRedirect: true },
+
+    { name: "OAuth error from Google           -> error shown, no redirect",
+      query: "?error=access_denied&error_description=User+declined",
+      show: "loginForm", hide: "resumePanel", expectAlert: true },
+  ];
+
+  function run(scenario) {
+    return new Promise((resolve) => {
+      const frame = document.getElementById("frame");
+      const url = "_index-stub.html" + scenario.query +
+                  (scenario.query ? "&" : "?") + "cb=" + Date.now() +
+                  (scenario.hash || "");
+
+      frame.onload = function () {
+        frame.onload = null;
+        // Let auth.js finish its async session check.
+        setTimeout(function () {
+          const d = frame.contentDocument;
+          const win = frame.contentWindow;
+          const onLoginPage = !!d.getElementById("loginForm");
+          const visible = (id) => { const el = d.getElementById(id); return !!el && !el.hidden; };
+          const landedOn = (win.location.pathname.split("/").pop() || "").split("?")[0];
+
+          const checks = [];
+
+          if (scenario.expectRedirect) {
+            // Leaving the stub is the pass: admin.html is reached, and with no real
+            // Supabase session in this harness it may bounce on to index.html.
+            checks.push(["DID continue to admin.html (fresh OAuth login)",
+                         landedOn === "admin.html" || landedOn === "index.html", "stayed on " + landedOn]);
+          } else {
+            checks.push(["stayed on the login page (no auto-redirect)", onLoginPage,
+                         "navigated to " + landedOn]);
+            checks.push([scenario.show + " visible", visible(scenario.show), "hidden or missing"]);
+            checks.push([scenario.hide + " hidden", !visible(scenario.hide), "was visible"]);
+          }
+
+          if (scenario.expectAlert) {
+            const alertEl = d.getElementById("alert");
+            checks.push(["error message shown", !!alertEl && !alertEl.hidden,
+                         "no alert displayed"]);
+          }
+
+          if (scenario.expectEmail) {
+            const shown = (d.getElementById("resumeEmail") || {}).textContent;
+            checks.push(["shows " + scenario.expectEmail, shown === scenario.expectEmail,
+                         "showed: " + shown]);
+          }
+          if (scenario.expectSignOut) {
+            checks.push(["signOut() was called", !!(win.__testState && win.__testState.signedOut),
+                         "not called"]);
+          }
+
+          resolve({
+            name: scenario.name,
+            url: "_index-stub.html" + (scenario.query || ""),
+            checks,
+            ok: checks.every((c) => c[1]),
+          });
+        }, 800);
+      };
+
+      frame.src = url;
+    });
+  }
+
+  (async () => {
+    const results = [];
+    for (const s of SCENARIOS) results.push(await run(s));
+
+    const box = document.getElementById("results");
+    for (const r of results) {
+      const div = document.createElement("div");
+      div.className = "case " + (r.ok ? "pass" : "fail");
+
+      const name = document.createElement("div");
+      name.className = "name"; name.textContent = r.name;
+
+      const url = document.createElement("div");
+      url.className = "url"; url.textContent = r.url;
+
+      const verdict = document.createElement("div");
+      verdict.className = "verdict"; verdict.textContent = r.ok ? "PASS" : "FAIL";
+
+      const detail = document.createElement("div");
+      detail.className = "detail";
+      detail.textContent = r.checks
+        .map((c) => (c[1] ? "  ok    " : "  FAIL  ") + c[0] + (c[1] ? "" : "   (" + c[2] + ")"))
+        .join("\n");
+
+      div.append(name, url, verdict, detail);
+      box.appendChild(div);
+    }
+
+    const passed = results.filter((r) => r.ok).length;
+    document.getElementById("summary").textContent =
+      passed + " / " + results.length + " scenarios passed";
+    document.title = passed === results.length ? "ALL PASS" : "FAILURES";
+  })();
+  </script>
+</body>
+</html>

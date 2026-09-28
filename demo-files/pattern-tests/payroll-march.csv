@@ -1,0 +1,5 @@
+employee,email,phone,pan,bank_ifsc,ctc_lpa
+R. Nair,r.nair@example.in,9876543210,ABCPN1234K,HDFC0001234,18.5
+S. Iyer,s.iyer@example.in,9123456780,BCDPI2345L,ICIC0004321,22.0
+A. Bose,a.bose@example.in,9812345670,CDEPB3456M,SBIN0007788,15.2
+Note: CTC revision letters go out after appraisal.
