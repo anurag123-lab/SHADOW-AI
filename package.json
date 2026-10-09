@@ -17,6 +17,7 @@
     "notifier:verify": "node notifier/index.js --verify",
     "notifier:test": "node notifier/test-alert.js",
     "test:auth": "node scripts/build-auth-test.js",
+    "test:policy-push": "node scripts/test-policy-push.js",
     "notifier:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 install",
     "notifier:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 status",
     "notifier:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 uninstall"

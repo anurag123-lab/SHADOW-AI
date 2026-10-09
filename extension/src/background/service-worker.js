@@ -187,7 +187,9 @@ async function getScanConfig() {
  * company's config through RLS, so nothing in the payload is trusted.
  * DELETE events can't be filtered server-side, so they are subscribed
  * unfiltered — a stray one just causes a harmless extra re-fetch.
- * The 10-minute alarm poll remains the fallback if the socket is down.
+ * Every (re)subscribe also triggers a re-fetch, so changes saved while
+ * the socket was reconnecting are never missed. A 30-second health-check
+ * alarm revives a dead socket; while it's down the same alarm polls.
  */
 var resyncTimer = null;
 function scheduleResync(reason) {
@@ -206,7 +208,10 @@ async function startRealtime() {
 
   var byCompany = "company_id=eq." + identity.companyId;
   var onChange = function (data) { scheduleResync((data && data.table) || "config"); };
-  var onStatus = function (status, detail) { log("realtime:", status, detail || ""); };
+  var onStatus = function (status, detail) {
+    log("realtime:", status, detail || "");
+    if (status === "subscribed") scheduleResync("(re)subscribe");
+  };
 
   // Two channels: if the server rejects one subscription it drops the whole
   // channel, so the company row (approved AI tool) is kept separate and can
@@ -231,7 +236,10 @@ async function startRealtime() {
     onChange: onChange,
     onStatus: onStatus,
   });
-  realtimeChannel = { close: function () { detection.close(); company.close(); } };
+  realtimeChannel = {
+    close: function () { detection.close(); company.close(); },
+    isHealthy: function () { return detection.isHealthy(); },
+  };
 }
 
 function broadcastConfigChanged() {
@@ -450,24 +458,55 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
 /* ==================================================================== *
  * Lifecycle
  * ==================================================================== */
+/**
+ * The alarm is a health check, not the main delivery path. Every 30s it
+ * wakes the worker (reviving it if Chrome tore it down), restarts a dead
+ * realtime socket and, if the socket isn't confirmed healthy, polls — so
+ * even with Realtime blocked a dashboard change lands within ~30s. With a
+ * healthy socket it only does a full re-sync every SYNC_INTERVAL_MINUTES.
+ */
+var HEALTH_ALARM_MINUTES = 0.5;   // Chrome's minimum alarm period
+
+function ensureHealthAlarm() {
+  chrome.alarms.get("sag-sync", function (a) {
+    if (!a || a.periodInMinutes !== HEALTH_ALARM_MINUTES) {
+      chrome.alarms.create("sag-sync", { periodInMinutes: HEALTH_ALARM_MINUTES });
+    }
+  });
+}
+
+var unhealthyChecks = 0;
+
+async function healthCheck() {
+  var healthy = !!(realtimeChannel && realtimeChannel.isHealthy());
+  var policy = await get(KEYS.policy);
+  var stale = !policy || Date.now() - policy.fetchedAt > Config.SYNC_INTERVAL_MINUTES * 60000;
+  unhealthyChecks = healthy ? 0 : unhealthyChecks + 1;
+  if (!healthy) {
+    // Missing, or still not subscribed a full check later: start afresh
+    // rather than trust a reconnect loop that may have stalled.
+    if (!realtimeChannel || unhealthyChecks >= 2) { unhealthyChecks = 0; startRealtime(); }
+    await syncConfig();
+    broadcastConfigChanged();
+  } else if (stale) {
+    await syncConfig();
+    broadcastConfigChanged();
+  }
+  flushQueue();
+}
+
 chrome.runtime.onInstalled.addListener(function () {
   log("installed");
-  chrome.alarms.create("sag-sync", { periodInMinutes: Config.SYNC_INTERVAL_MINUTES });
-  syncConfig();
-  startRealtime();
+  ensureHealthAlarm();
 });
 
 chrome.runtime.onStartup.addListener(function () {
-  chrome.alarms.create("sag-sync", { periodInMinutes: Config.SYNC_INTERVAL_MINUTES });
-  syncConfig();
-  startRealtime();
+  ensureHealthAlarm();
 });
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name !== "sag-sync") return;
-  // Polling remains the fallback even when Realtime is connected: an MV3
-  // worker can be torn down at any time, taking the socket with it.
-  syncConfig().then(function () { flushQueue(); });
+  healthCheck();
 });
 
 // Cold start after a worker teardown.
@@ -488,5 +527,6 @@ configDiagnostics()
     console.error("[ShadowAI:bg] could not read config:", e.message);
   });
 
-syncConfig();
+ensureHealthAlarm();
+syncConfig().then(function () { broadcastConfigChanged(); });
 startRealtime();

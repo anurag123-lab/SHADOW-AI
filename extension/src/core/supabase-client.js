@@ -302,15 +302,21 @@
 
     var ws = null;
     var heartbeat = null;
+    var tokenTimer = null;
     var ref = 0;
     var closed = false;
     var retryMs = 1000;
     var joinRef = null;
+    var subscribed = false;
+    var sentToken = null;
+    var channelTopic = "realtime:" + (options.topic || table || "config");
 
     async function connect() {
       if (closed) return;
+      subscribed = false;
       var c = await getConnection();
       var s = await getValidSession();
+      sentToken = s ? s.access_token : null;
       var wsUrl =
         c.url.replace(/^http/, "ws") +
         "/realtime/v1/websocket?apikey=" + encodeURIComponent(c.anonKey) + "&vsn=2.0.0";
@@ -323,10 +329,9 @@
       }
 
       ws.onopen = function () {
-        retryMs = 1000;
         onStatus("connected");
         joinRef = String(ref + 1);
-        send("realtime:" + (options.topic || table || "config"), "phx_join", {
+        send(channelTopic, "phx_join", {
           // Full channel config, matching what supabase-js sends; current
           // Realtime servers validate the whole block.
           config: {
@@ -335,11 +340,17 @@
             postgres_changes: changes,
             private: false,
           },
-          access_token: s ? s.access_token : null,
+          access_token: sentToken,
         });
+        // 20s, not 25s: socket traffic is what keeps an MV3 service worker
+        // alive, and Chrome tears an idle worker down at 30s.
         heartbeat = setInterval(function () {
           send("phoenix", "heartbeat", {});
-        }, 25000);
+        }, 20000);
+        // Realtime evaluates RLS with the JWT it was given and drops the
+        // subscription once that JWT expires (~1h). Hand it a fresh one
+        // before then, the way supabase-js does.
+        tokenTimer = setInterval(pushFreshToken, 60000);
       };
 
       ws.onmessage = function (evt) {
@@ -348,11 +359,27 @@
         try { msg = JSON.parse(evt.data); } catch (e) { return; }
         // Protocol v2 frames: [join_ref, ref, topic, event, payload]
         if (Array.isArray(msg)) msg = { topic: msg[2], event: msg[3], payload: msg[4] };
-        if (msg.event === "system" && msg.payload && msg.payload.status === "error") {
-          onStatus("error", msg.payload.message);
+        if (msg.topic !== channelTopic) return;
+        var p = msg.payload || {};
+
+        if (msg.event === "phx_reply" && p.status === "error") {
+          // Join rejected: without this the socket stays open and silent.
+          return fail("join rejected: " + JSON.stringify(p.response || {}));
         }
-        if (msg.event === "postgres_changes" && msg.payload && msg.payload.data) {
-          onChange(msg.payload.data);
+        if (msg.event === "system") {
+          if (p.status === "error") return fail(p.message || "subscription error");
+          if (p.status === "ok" && p.extension === "postgres_changes" && !subscribed) {
+            subscribed = true;
+            retryMs = 1000;
+            onStatus("subscribed");
+          }
+          return;
+        }
+        if (msg.event === "phx_close" || msg.event === "phx_error") {
+          return fail(msg.event);
+        }
+        if (msg.event === "postgres_changes" && p.data) {
+          onChange(p.data);
         }
       };
 
@@ -360,15 +387,33 @@
 
       ws.onclose = function () {
         clearInterval(heartbeat);
+        clearInterval(tokenTimer);
+        subscribed = false;
         onStatus("disconnected");
         scheduleReconnect();
       };
     }
 
+    /** Any channel-level failure: drop the socket and let onclose reconnect. */
+    function fail(reason) {
+      subscribed = false;
+      onStatus("error", reason);
+      if (ws) try { ws.close(); } catch (e) {}
+    }
+
+    async function pushFreshToken() {
+      var s = await getValidSession();     // refreshes when near expiry
+      var token = s ? s.access_token : null;
+      if (token && token !== sentToken) {
+        sentToken = token;
+        send(channelTopic, "access_token", { access_token: token });
+      }
+    }
+
     function scheduleReconnect() {
       if (closed) return;
       setTimeout(connect, retryMs);
-      retryMs = Math.min(retryMs * 2, 60000);   // capped exponential backoff
+      retryMs = Math.min(retryMs * 2, 30000);   // capped exponential backoff
     }
 
     function send(topic, event, payload) {
@@ -381,11 +426,15 @@
     function close() {
       closed = true;
       clearInterval(heartbeat);
+      clearInterval(tokenTimer);
       if (ws) try { ws.close(); } catch (e) {}
     }
 
     connect();
-    return { close: close };
+    return {
+      close: close,
+      isHealthy: function () { return !closed && subscribed && !!ws && ws.readyState === 1; },
+    };
   }
 
   return {

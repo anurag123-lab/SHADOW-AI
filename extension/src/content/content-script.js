@@ -31,6 +31,7 @@
 
   var config = null;          // scan config from the service worker
   var lastScan = null;        // most recent debounced result
+  var configVersion = 0;      // bumped on every config load; invalidates lastScan
   var debounceTimer = null;
   var bypassNext = false;     // set when WE are the ones dispatching the send
   var busy = false;
@@ -183,6 +184,7 @@
     var res = await send({ type: "GET_SCAN_CONFIG" });
     if (!res.ok) return null;
     config = res.data;
+    configVersion++;
 
     Detector.setPolicyOverrides(config.policyOverrides || {});
     Detector.setHoneytokens(config.honeytokens || []);
@@ -210,7 +212,7 @@
     var result = Detector.scan(text);
     var ms = performance.now() - started;
     if (ms > 100) console.debug("[ShadowAI] scan took " + ms.toFixed(1) + "ms");
-    lastScan = { text: text, result: result, at: Date.now() };
+    lastScan = { text: text, result: result, at: Date.now(), configVersion: configVersion };
     updatePill(result);
     return result;
   }
@@ -260,9 +262,13 @@
     var text = readComposer(composer);
     if (!text || text.trim().length === 0) return false;
 
-    // Reuse the debounced result only if the text hasn't changed since.
+    // Reuse the debounced result only if neither the text nor the policy
+    // has changed since — a tier switched in the dashboard must apply to
+    // the very next send, even for text typed before the switch.
     var result =
-      lastScan && lastScan.text === text ? lastScan.result : scanNow(text);
+      lastScan && lastScan.text === text && lastScan.configVersion === configVersion
+        ? lastScan.result
+        : scanNow(text);
 
     if (!result || result.riskLevel === "None") return false;   // let it through
 
@@ -427,9 +433,30 @@
 
   chrome.runtime.onMessage.addListener(function (msg) {
     if (msg && msg.type === "SAG_CONFIG_CHANGED") {
-      loadConfig();
+      reloadConfig();
     }
   });
+
+  // Belt and braces: every sync path (realtime push, health-check poll,
+  // worker cold start) ends in a storage write, and this fires in every tab
+  // even if the worker's broadcast message never arrives.
+  var CONFIG_STORAGE_KEYS = ["sag_policy", "sag_honeytokens", "sag_keywords", "sag_settings", "sag_identity"];
+  chrome.storage.onChanged.addListener(function (changes, area) {
+    if (area !== "local") return;
+    if (CONFIG_STORAGE_KEYS.some(function (k) { return k in changes; })) reloadConfig();
+  });
+
+  var reloadTimer = null;
+  function reloadConfig() {
+    clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(function () {
+      loadConfig().then(function () {
+        // Re-score what's already typed so the pill reflects the new tier now,
+        // not on the next keystroke.
+        if (lastScan && isActive()) scanNow(lastScan.text);
+      });
+    }, 100);
+  }
 
   loadConfig().then(function () {
     attach();
