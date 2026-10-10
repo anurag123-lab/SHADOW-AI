@@ -20,6 +20,8 @@
     "test:agent": "node agent-guard/test/run-tests.js && node agent-guard/test/adapters.js && node agent-guard/test/git-and-install.js && node agent-guard/test/attachments-global.js && node agent-guard/test/pattern-parity.js",
     "scan:repo": "node agent-guard/git/scan.js --all",
     "demo:agent": "node agent-guard/demo.js --step",
+    "lab:setup": "node agent-guard/lab/setup-lab.js",
+    "lab:remove": "node agent-guard/lab/setup-lab.js --remove",
     "test:policy-push": "node scripts/test-policy-push.js",
     "notifier:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 install",
     "notifier:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/notifier-task.ps1 status",

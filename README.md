@@ -34,7 +34,24 @@ supabase/migrations/  schema, functions, row-level security
 notifier/           Node scripts: critical-event alerts + weekly digest
 scripts/            icon generator, vendor fetcher, dev server, demo seeder
 docs/               setup and demo guides
+agent-guard/        the same detection for AI coding agents (Claude Code, Cursor,
+                    Antigravity, Windsurf) + codebase scan + git pre-commit / CI
+  lab/                one-command demo lab with fake secrets — see below
 ```
+
+---
+
+## Try it on your laptop: AI coding agents
+
+```bash
+git clone https://github.com/anurag123-lab/SHADOW-AI.git
+cd SHADOW-AI
+npm run lab:setup        # creates ../shadow-ai-agent-lab (fake secrets) and switches the guard on for it
+```
+
+Open that folder in Claude Code, Cursor, Antigravity or Windsurf and ask the AI
+to read the files. Step-by-step demo: [agent-guard/lab/README.md](agent-guard/lab/README.md).
+No AI tool installed? Run `node agent-guard/demo.js --step` for the whole demo in a terminal.
 
 ---
 

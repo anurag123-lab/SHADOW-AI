@@ -69,7 +69,15 @@ function lineOf(text, index) {
 
 // ---------------------------------------------------------------- collect files
 function collect(args, cwd) {
-  const root = repoRoot(cwd) || cwd;
+  // explicit paths: report file names relative to the scanned project, not to wherever the command ran
+  const isGitMode = args.some((a) => a === "--staged" || a === "--diff" || a === "--all");
+  const firstPath = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--diff");
+  let base = cwd;
+  if (!isGitMode && firstPath) {
+    const abs = path.resolve(cwd, firstPath);
+    try { base = fs.statSync(abs).isDirectory() ? abs : path.dirname(abs); } catch (e) {}
+  }
+  const root = repoRoot(base) || base;
   const files = [];   // { rel, read: () => Buffer|null }
   const fromDisk = (rel) => () => { try { const f = path.join(root, rel); return fs.statSync(f).size > MAX_BYTES ? null : fs.readFileSync(f); } catch (e) { return null; } };
 

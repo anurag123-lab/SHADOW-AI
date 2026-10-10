@@ -103,6 +103,17 @@ events made offline are queued and sent later.
   Antigravity's own allow/deny settings still decide. The guard never
   auto-approves.
 
+## Demo lab (try it on any laptop)
+
+```
+npm run lab:setup                 # creates ../shadow-ai-agent-lab with FAKE secrets + hooks for every tool + git hook
+npm run lab:remove                # switches them off and deletes it
+```
+
+The lab is generated rather than committed: its fake keys would trip GitHub
+push protection, and the hook files must point at each machine's own clone.
+The walkthrough is in [lab/README.md](lab/README.md).
+
 ## Stage demo
 
 ```
