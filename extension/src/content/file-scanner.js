@@ -35,7 +35,12 @@
   /* ================================================================ *
    * Interception
    * ================================================================ */
+  function current() {
+    return !window.ShadowAIRuntime || window.ShadowAIRuntime.isCurrent();
+  }
+
   function onFileInputChange(e) {
+    if (!current()) return;   // a newer copy of the extension owns this page
     var input = e.target;
     if (!input || input.type !== "file") return;
 
@@ -56,7 +61,7 @@
   }
 
   function onDrop(e) {
-    if (busy) return;
+    if (!current() || busy) return;
     var dt = e.dataTransfer;
     if (!dt) return;
 

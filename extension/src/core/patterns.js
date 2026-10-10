@@ -383,6 +383,39 @@ const ENTROPY_PATTERN = {
   specificity: 1,
 };
 
+/**
+ * Plain-text credential assignments — `password: Sup3rS3cret!`,
+ * `db_pass = hunter2024`, `api key: 9f8e...` in notes and config files.
+ * Entropy misses short human-chosen passwords; this catches them by their
+ * label instead. Reported as `genericSecret`, so the same company policy
+ * (Warn by default, promotable to mandatory) governs both.
+ *
+ * Only the VALUE is matched (so redaction keeps the label), and values that
+ * are code, not secrets, are rejected: `password: req.body.password`,
+ * `password: string`, `${DB_PASS}`, `process.env.X`, `changeme`, `****`.
+ */
+const CREDENTIAL_PLACEHOLDERS = /^(?:changeme|change_me|password|passw0rd|secret|example|placeholder|redacted|required|optional|string|number|boolean|null|none|nil|true|false|undefined|todo|tbd|your[_-]?\w*|<[^>]*>|x+|\*+|\.+|-+)$/i;
+function isCredentialValue(v) {
+  const s = String(v).replace(/^["'`]|["'`]$/g, "");
+  if (s.length < 6) return false;
+  if (CREDENTIAL_PLACEHOLDERS.test(s)) return false;
+  if (/^(?:process\.env|os\.environ|import\.meta|\$\{|\$[A-Za-z_]|\{\{|%\w|env\(|getenv)/i.test(s)) return false;
+  if (/[()[\]]/.test(s)) return false;                                   // function call / index: code
+  if (/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/.test(s)) return false; // dotted reference: req.body.password
+  // A real password/secret has a digit or a symbol; a bare word is a variable or type name.
+  return /[0-9]/.test(s) || /[^A-Za-z0-9_]/.test(s);
+}
+const CREDENTIAL_PATTERN = {
+  type: "genericSecret",
+  label: "Password or secret written in plain text",
+  risk: RISK.HIGH,
+  defaultTier: TIER.WARN,
+  redactAs: "[SECRET REDACTED]",
+  regex: /(?<=\b(?:password|passwd|passwort|pwd|pass|db[_ -]?pass(?:word)?|secret|client[_ -]?secret|api[_ -]?key|apikey|access[_ -]?token|auth[_ -]?token|bearer)["']?\s*(?:[:=]|=>|\bis\b)\s*["']?)[^\s"'`,;]{6,100}/gi,
+  validate: isCredentialValue,
+  specificity: 1,
+};
+
 const ALL_PATTERN_TYPES = Object.freeze([
   ...REGEX_PATTERNS.map((p) => p.type),
   ...KEYWORD_PATTERNS.map((p) => p.type),
@@ -398,6 +431,7 @@ return {
   REGEX_PATTERNS: REGEX_PATTERNS,
   KEYWORD_PATTERNS: KEYWORD_PATTERNS,
   ENTROPY_PATTERN: ENTROPY_PATTERN,
+  CREDENTIAL_PATTERN: CREDENTIAL_PATTERN,
   COMPLIANCE_MAP: COMPLIANCE_MAP,
   DEFAULT_FRAMEWORK: DEFAULT_FRAMEWORK,
   COMPLIANCE_DISCLAIMER: COMPLIANCE_DISCLAIMER,

@@ -1,0 +1,14 @@
+{
+  "_readme": "Copy this to <your project>/.claude/settings.json to turn the guard on for THAT project. Replace PATH_TO with the absolute path to this agent-guard folder (forward slashes). It is deliberately NOT active inside this repository.",
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "node \"PATH_TO/agent-guard/shadow-hook.js\"", "timeout": 15 } ] }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|NotebookRead|Grep|Glob|Bash|PowerShell|Write|Edit|MultiEdit|WebFetch|mcp__.*",
+        "hooks": [ { "type": "command", "command": "node \"PATH_TO/agent-guard/shadow-hook.js\"", "timeout": 15 } ]
+      }
+    ]
+  }
+}

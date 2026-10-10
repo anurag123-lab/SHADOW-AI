@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Catches sensitive company data before it reaches an AI tool. Detection runs entirely in your browser — your messages are never transmitted.",
 
-  "permissions": ["storage", "identity", "alarms", "clipboardWrite"],
+  "permissions": ["storage", "identity", "alarms", "clipboardWrite", "scripting"],
 
   "host_permissions": [
     "https://*.supabase.co/*",
@@ -47,6 +47,7 @@
         "https://copilot.microsoft.com/*"
       ],
       "js": [
+        "src/content/runtime-guard.js",
         "src/core/patterns.js",
         "src/core/detector.js",
         "vendor/mammoth.browser.min.js",

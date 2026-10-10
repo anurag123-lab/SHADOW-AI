@@ -1,0 +1,7 @@
+{
+  "name": "shadow-ai-agent-guard",
+  "private": true,
+  "type": "commonjs",
+  "description": "Shadow AI Guard for AI coding agents (Claude Code, Cursor, Windsurf/Devin, Antigravity hooks + git pre-commit/CI). Reuses ../extension/src/core.",
+  "scripts": { "test": "node test/run-tests.js && node test/adapters.js && node test/git-and-install.js && node test/attachments-global.js && node test/pattern-parity.js" }
+}

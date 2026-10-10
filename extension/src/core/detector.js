@@ -139,7 +139,7 @@
   function scanRegexPatterns(text, out) {
     // The entropy rule runs last so that, on an equal span, the named
     // pattern is already in the list and wins the specificity tie-break.
-    var defs = P.REGEX_PATTERNS.concat([P.ENTROPY_PATTERN]);
+    var defs = P.REGEX_PATTERNS.concat([P.ENTROPY_PATTERN, P.CREDENTIAL_PATTERN].filter(Boolean));
     for (var i = 0; i < defs.length; i++) {
       var def = defs[i];
       var re = new RegExp(def.regex.source, def.regex.flags); // fresh lastIndex
@@ -221,6 +221,16 @@
   var RISK_RANK = { None: 0, Low: 1, Medium: 2, High: 3 };
 
   function resolveOverlaps(matches) {
+    // A heuristic match never hides a named one. "STRIPE_SECRET_KEY=sk_live_..."
+    // is one high-entropy token that starts before the key itself; without
+    // this, the generic (Warn) match would win and the live key (Mandatory)
+    // would be reported as a soft warning.
+    var named = matches.filter(function (m) { return (m.specificity || 2) > 1; });
+    matches = matches.filter(function (m) {
+      if ((m.specificity || 2) > 1) return true;
+      return !named.some(function (n) { return n.start < m.end && m.start < n.end; });
+    });
+
     var sorted = matches.slice().sort(function (a, b) {
       if (a.start !== b.start) return a.start - b.start;
       var lenDiff = (b.end - b.start) - (a.end - a.start);

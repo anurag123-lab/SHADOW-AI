@@ -1,0 +1,43 @@
+# Shadow AI Guard — CI secret / regulated-data scan.
+# Copy to <your repo>/.github/workflows/shadow-ai-guard.yml (NOT into the Shadow AI Guard repo itself:
+# its tests contain deliberate fake secrets).
+#
+# Runs the same detection engine as the browser extension and the agent hooks.
+# Fails the pull request on Mandatory findings (live keys, card numbers, Aadhaar,
+# committed .env / private keys). Developers can skip their local pre-commit hook
+# with --no-verify; they cannot skip this.
+#
+# Test fixtures: list them in .shadow-ai-ignore at the repo root.
+# Company keywords / honeytokens for CI: commit a .shadow-ai-policy.json.
+
+name: Shadow AI Guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0                       # needed for the --diff against the base branch
+
+      - uses: actions/checkout@v4              # the guard itself
+        with:
+          repository: anurag123-lab/SHADOW-AI  # or your fork / internal mirror
+          path: .shadow-ai-guard
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Scan changed files
+        if: github.event_name == 'pull_request'
+        run: node .shadow-ai-guard/agent-guard/git/scan.js --diff origin/${{ github.base_ref }}
+
+      - name: Scan whole repository
+        if: github.event_name == 'push'
+        run: node .shadow-ai-guard/agent-guard/git/scan.js --all

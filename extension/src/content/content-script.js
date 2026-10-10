@@ -19,6 +19,9 @@
   "use strict";
 
   var Detector = window.ShadowAIDetector;
+  var Runtime = window.ShadowAIRuntime;
+  // Take over the page from any older copy left behind by an extension reload.
+  Runtime.claim();
   var UI = window.ShadowAIInterstitial;
 
   if (!Detector || !UI) {
@@ -171,13 +174,9 @@
   /* ================================================================ *
    * Config
    * ================================================================ */
+  // Never throws, even if the extension was reloaded under this tab.
   function send(message) {
-    return new Promise(function (resolve) {
-      chrome.runtime.sendMessage(message, function (response) {
-        if (chrome.runtime.lastError) return resolve({ ok: false, error: chrome.runtime.lastError.message });
-        resolve(response || { ok: false });
-      });
-    });
+    return Runtime.sendMessage(message);
   }
 
   async function loadConfig() {
@@ -200,6 +199,8 @@
   }
 
   function isActive() {
+    // A newer copy (re-injected after an extension update) owns the page.
+    if (!Runtime.isCurrent()) return false;
     return config && config.enrolled && config.enabled;
   }
 
@@ -432,6 +433,7 @@
   }
 
   chrome.runtime.onMessage.addListener(function (msg) {
+    if (!Runtime.isCurrent()) return;
     if (msg && msg.type === "SAG_CONFIG_CHANGED") {
       reloadConfig();
     }
@@ -442,12 +444,13 @@
   // even if the worker's broadcast message never arrives.
   var CONFIG_STORAGE_KEYS = ["sag_policy", "sag_honeytokens", "sag_keywords", "sag_settings", "sag_identity"];
   chrome.storage.onChanged.addListener(function (changes, area) {
-    if (area !== "local") return;
+    if (area !== "local" || !Runtime.isCurrent()) return;
     if (CONFIG_STORAGE_KEYS.some(function (k) { return k in changes; })) reloadConfig();
   });
 
   var reloadTimer = null;
   function reloadConfig() {
+    if (!Runtime.alive()) return;   // keep the last config we had; nothing to fetch from
     clearTimeout(reloadTimer);
     reloadTimer = setTimeout(function () {
       loadConfig().then(function () {

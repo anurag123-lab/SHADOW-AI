@@ -495,9 +495,37 @@ async function healthCheck() {
   flushQueue();
 }
 
+/**
+ * Chrome does not inject content scripts into tabs that were already open
+ * when the extension is installed, reloaded or updated: those tabs would
+ * keep a disconnected copy ("Extension context invalidated") or none at
+ * all until refreshed. Inject the protection into every open AI tab now.
+ * The fresh copy claims the page; the orphaned one goes quiet
+ * (see src/content/runtime-guard.js).
+ */
+async function reinjectIntoOpenTabs() {
+  var groups = (chrome.runtime.getManifest().content_scripts || [])
+    .filter(function (cs) { return (cs.js || []).indexOf("src/content/content-script.js") !== -1; });
+  for (var i = 0; i < groups.length; i++) {
+    var tabs = [];
+    try { tabs = await chrome.tabs.query({ url: groups[i].matches }); } catch (e) { continue; }
+    for (var j = 0; j < tabs.length; j++) {
+      var tab = tabs[j];
+      if (!tab.id || tab.discarded) continue;
+      try {
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: groups[i].js });
+        log("re-injected protection into open tab", tab.id);
+      } catch (e) {
+        log("could not re-inject into tab", tab.id, e && e.message);
+      }
+    }
+  }
+}
+
 chrome.runtime.onInstalled.addListener(function () {
   log("installed");
   ensureHealthAlarm();
+  reinjectIntoOpenTabs();
 });
 
 chrome.runtime.onStartup.addListener(function () {

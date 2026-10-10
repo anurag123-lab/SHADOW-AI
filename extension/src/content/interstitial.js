@@ -56,12 +56,27 @@
     }, 2600);
   }
 
+  /*
+   * The dialog's stylesheet is read ONCE, while this copy is still
+   * connected to the extension, and kept in memory. If the extension is
+   * later reloaded, chrome.runtime.getURL would throw "Extension context
+   * invalidated" — a cached <style> keeps the dialog working and styled.
+   */
+  var CSS_PATH = "src/content/interstitial.css";
+  var cssText = null;
+  (function cacheStyles() {
+    var url = root.ShadowAIRuntime && root.ShadowAIRuntime.getURL(CSS_PATH);
+    if (!url) return;
+    fetch(url).then(function (r) { return r.text(); })
+      .then(function (t) { cssText = t; })
+      .catch(function () { /* fall back to <link> below */ });
+  })();
+
   function styleLink() {
-    var link = el("link", {
-      rel: "stylesheet",
-      href: chrome.runtime.getURL("src/content/interstitial.css"),
-    });
-    return link;
+    if (cssText) return el("style", null, cssText);
+    var url = root.ShadowAIRuntime && root.ShadowAIRuntime.getURL(CSS_PATH);
+    if (url) return el("link", { rel: "stylesheet", href: url });
+    return el("style", null, "");   // disconnected and not cached yet: unstyled, but it still works
   }
 
   /**

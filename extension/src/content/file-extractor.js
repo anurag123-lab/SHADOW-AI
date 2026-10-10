@@ -46,10 +46,16 @@
    * ---------------------------------------------------------------- */
   function loadPdfJs() {
     if (pdfjsPromise) return pdfjsPromise;
-    pdfjsPromise = import(chrome.runtime.getURL("vendor/pdf.min.mjs"))
+    var R = window.ShadowAIRuntime;
+    var libUrl = R ? R.getURL("vendor/pdf.min.mjs") : chrome.runtime.getURL("vendor/pdf.min.mjs");
+    var workerUrl = R ? R.getURL("vendor/pdf.worker.min.mjs") : chrome.runtime.getURL("vendor/pdf.worker.min.mjs");
+    if (!libUrl || !workerUrl) {
+      return Promise.reject(new Error("Shadow AI Guard was updated — refresh this page"));
+    }
+    pdfjsPromise = import(libUrl)
       .then(function (mod) {
         var lib = mod.default && mod.default.getDocument ? mod.default : mod;
-        lib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL("vendor/pdf.worker.min.mjs");
+        lib.GlobalWorkerOptions.workerSrc = workerUrl;
         return lib;
       })
       .catch(function (e) {

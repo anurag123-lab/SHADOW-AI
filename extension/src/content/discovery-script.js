@@ -19,7 +19,11 @@
 
   var host = location.hostname.replace(/^www\./, "");
 
-  chrome.runtime.sendMessage({ type: "LOG_DISCOVERY", aiTool: host }, function () {
-    void chrome.runtime.lastError;   // worker asleep or not enrolled — fine
-  });
+  try {
+    chrome.runtime.sendMessage({ type: "LOG_DISCOVERY", aiTool: host }, function () {
+      try { void chrome.runtime.lastError; } catch (e) {}   // worker asleep or not enrolled — fine
+    });
+  } catch (e) {
+    // Extension reloaded under this tab — skip; the next visit records it.
+  }
 })();
